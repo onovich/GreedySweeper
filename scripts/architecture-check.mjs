@@ -3,6 +3,17 @@ import { join, relative, resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
 const gameRoot = join(root, 'src', 'game');
+const requiredBoundaries = [
+  'src/app/App.jsx',
+  'src/application',
+  'src/game/config',
+  'src/game/model',
+  'src/game/engine',
+  'src/game/ai',
+  'src/game/selectors',
+  'src/ui/components',
+  'src/ui/screens',
+];
 const forbiddenPatterns = [
   { pattern: /from\s+['"]react(?:\/[^'"]*)?['"]/, description: 'React import' },
   { pattern: /from\s+['"][^'"]*\/ui(?:\/[^'"]*)?['"]/, description: 'UI import' },
@@ -18,6 +29,11 @@ function filesBelow(directory) {
 }
 
 const violations = [];
+for (const boundary of requiredBoundaries) {
+  if (!existsSync(join(root, boundary))) {
+    violations.push(`Missing required architecture boundary: ${boundary}.`);
+  }
+}
 for (const filePath of filesBelow(gameRoot).filter((file) => /\.(js|jsx)$/.test(file))) {
   const source = readFileSync(filePath, 'utf8');
   for (const rule of forbiddenPatterns) {
