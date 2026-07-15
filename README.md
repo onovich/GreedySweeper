@@ -37,4 +37,4 @@ The pure, serializable game engine is isolated from React, browser events, timer
 
 ## Deployment
 
-GitHub Pages deployment will use the official Actions workflow and publish the Vite build under `/GreedySweeper/`.<br/>**GitHub Pages 将使用官方 Actions 工作流部署，并在 `/GreedySweeper/` 路径下发布 Vite 构建产物。**
+GitHub Pages deployment uses the official Actions workflow and publishes the Vite build under `/GreedySweeper/`.<br/>**GitHub Pages 使用官方 Actions 工作流部署，并在 `/GreedySweeper/` 路径下发布 Vite 构建产物。**
