@@ -17,6 +17,8 @@ npm run dev
 
 Install dependencies and start the Vite development server.<br/>**安装依赖并启动 Vite 开发服务器。**
 
+Double-click `RunLocal.cmd` on Windows to select an available local port and open the game automatically.<br/>**Windows 上双击 `RunLocal.cmd`，它会选择可用端口并自动打开游戏。**
+
 ## Quality Gates
 
 ```powershell
