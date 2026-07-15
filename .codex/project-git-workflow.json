@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "initializedMarker": "codex-project-git-workflow: initialized",
+  "initializedAt": "2026-07-16T04:37:00+08:00",
+  "projectName": "Greedy Sweeper",
+  "repoRoot": "D:\\WebProjects\\GreedySweeper",
+  "safeDirectory": "D:/WebProjects/GreedySweeper",
+  "statusCommand": "git -c safe.directory=D:/WebProjects/GreedySweeper status --short --branch",
+  "validationCommands": [
+    "npm run format:check",
+    "npm run lint",
+    "npm run test:run",
+    "npm run arch:check",
+    "npm run build"
+  ],
+  "stagingPolicy": "selected files only",
+  "commitCommand": "",
+  "pushCommand": "git -c safe.directory=D:/WebProjects/GreedySweeper push -u origin HEAD",
+  "docsRequirement": "Update relevant documentation for code, workflow, or behavior changes before committing.",
+  "forbiddenCommands": "Do not use --no-verify, force push, or bypass the configured validation gate."
+}
