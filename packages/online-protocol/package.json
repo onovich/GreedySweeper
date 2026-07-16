@@ -1,0 +1,6 @@
+{
+  "name": "@greedy-sweeper/online-protocol",
+  "private": true,
+  "type": "module",
+  "exports": "./index.js"
+}

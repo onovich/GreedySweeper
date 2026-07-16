@@ -1,0 +1,5 @@
+{
+  "name": "@greedy-sweeper/room-worker",
+  "private": true,
+  "type": "module"
+}

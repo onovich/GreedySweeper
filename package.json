@@ -1,6 +1,10 @@
 {
   "name": "greedy-sweeper",
   "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "version": "0.1.0",
   "type": "module",
   "scripts": {
@@ -15,7 +19,11 @@
     "arch:check": "node scripts/architecture-check.mjs",
     "ai:evaluate": "node scripts/evaluate-ai-policies.mjs",
     "greed:evaluate": "node scripts/evaluate-greed-balance.mjs",
-    "progression:evaluate": "node scripts/evaluate-progression.mjs"
+    "progression:evaluate": "node scripts/evaluate-progression.mjs",
+    "protocol:evaluate": "node packages/online-protocol/evaluate.mjs",
+    "worker:test": "node apps/room-worker/test.mjs",
+    "worker:dry-run": "node apps/room-worker/dry-run.mjs",
+    "workspace:check": "node scripts/workspace-check.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.24.0",
