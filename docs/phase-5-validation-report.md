@@ -32,6 +32,6 @@ Validation: `format:check`, `lint`, 28 files / 71 tests, `ai:evaluate`,
 `greed:evaluate`, `progression:evaluate`, `arch:check`, `build`, and `git diff --check`
 PASS.
 
-Residual risks: existing random games do not yet have a deterministic descriptor/replay,
-so they are deliberately not registered; browser automation/Pages verification retains
+Residual risks: random, imported challenge, and daily sessions now retain a deterministic
+descriptor/replay and source classification. Browser automation/Pages verification retains
 the previously documented timeout limitation and manual confirmation.

@@ -44,9 +44,18 @@ export function reduceStats(base = createEmptyStats(), facts = []) {
         next[key] = Math.max(next[key], fact[key]);
       if (fact.winner === 'human' && !fact.wrongFlags && !fact.explosions) next.cleanWins += 1;
       if (fact.sessionSource === 'daily') next.dailyGames += 1;
-      next.modes[fact.mode] = (next.modes[fact.mode] ?? 0) + 1;
-      next.difficulties[fact.aiDifficulty] = (next.difficulties[fact.aiDifficulty] ?? 0) + 1;
-      next.styles[fact.aiStyle] = (next.styles[fact.aiStyle] ?? 0) + 1;
+      for (const [group, value] of [
+        ['modes', fact.mode],
+        ['difficulties', fact.aiDifficulty],
+        ['styles', fact.aiStyle],
+      ]) {
+        const current = next[group][value] ?? { games: 0, wins: 0, losses: 0, draws: 0 };
+        const dimension = { ...current, games: current.games + 1 };
+        if (fact.winner === 'human') dimension.wins += 1;
+        else if (fact.winner === 'ai') dimension.losses += 1;
+        else dimension.draws += 1;
+        next[group][value] = { ...dimension, winRate: dimension.wins / dimension.games };
+      }
       return next;
     },
     {

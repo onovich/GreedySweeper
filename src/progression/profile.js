@@ -6,11 +6,13 @@ export function createProfile() {
     progressionVersion: PROGRESSION_VERSION,
     baseline: createEmptyStats(),
     facts: [],
+    recordIds: [],
     unlocks: [],
   };
 }
 export function appendCompletedFacts(profile, facts) {
-  if (profile.facts.some((item) => item.id === facts.id)) return { profile, added: false };
+  if ((profile.recordIds ?? profile.facts.map((item) => item.id)).includes(facts.id))
+    return { profile, added: false };
   let baseline = profile.baseline,
     retained = [...profile.facts, facts];
   if (retained.length > MAX_RETAINED_FACTS) {
@@ -24,7 +26,13 @@ export function appendCompletedFacts(profile, facts) {
   );
   return {
     added: true,
-    profile: { progressionVersion: PROGRESSION_VERSION, baseline, facts: retained, unlocks },
+    profile: {
+      progressionVersion: PROGRESSION_VERSION,
+      baseline,
+      facts: retained,
+      recordIds: [...(profile.recordIds ?? profile.facts.map((item) => item.id)), facts.id],
+      unlocks,
+    },
   };
 }
 export function getProfileStats(profile) {

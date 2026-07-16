@@ -15,12 +15,12 @@ export const ACHIEVEMENTS = Object.freeze(
     [
       'versatile_miner',
       'Versatile miner',
-      (s) => ['easy', 'normal', 'hard'].every((x) => s.difficulties[x] > 0),
+      (s) => ['easy', 'normal', 'hard'].every((x) => s.difficulties[x]?.games > 0),
     ],
     [
       'style_master',
       'Style master',
-      (s) => ['balanced', 'conservative', 'greedy'].every((x) => s.styles[x] > 0),
+      (s) => ['balanced', 'conservative', 'greedy'].every((x) => s.styles[x]?.games > 0),
     ],
     ['veteran_25', 'Veteran 25', (s) => s.completedGames >= 25],
   ].map(([id, title, when]) =>

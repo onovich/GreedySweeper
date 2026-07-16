@@ -9,9 +9,9 @@ import {
 import { createChallengeBoard } from '../game/challenge/board';
 import { decodeChallengeCode } from '../game/challenge/code';
 import { createDailyChallenge } from '../game/challenge/daily';
+import { createChallengeDescriptor } from '../game/challenge/contracts';
 import { BOARD_CONFIG, SCORE_CONFIG, TIMING_CONFIG } from '../game/config/game-config';
 import { DEFAULT_NEW_GAME_MODE, GREED_CHALLENGE_MODE } from '../game/config/protocol-config';
-import { createBoard } from '../game/engine/board';
 import { applyAction } from '../game/engine/transition';
 import {
   PLAYERS,
@@ -34,15 +34,13 @@ function createRandomSession(
   aiPolicy = DEFAULT_AI_POLICY,
   mode = DEFAULT_NEW_GAME_MODE,
 ) {
-  return {
-    gameState:
-      mode === GREED_CHALLENGE_MODE
-        ? createGreedInitialState(createBoard(config, random))
-        : createInitialState(createBoard(config, random)),
-    descriptor: null,
-    actions: [],
-    aiPolicy,
-  };
+  const descriptor = createChallengeDescriptor({
+    seed: Math.floor(random() * 4294967295),
+    board: config,
+    mode: mode === GREED_CHALLENGE_MODE ? 'greed' : 'standard',
+    rulesVersion: mode === GREED_CHALLENGE_MODE ? '2' : '1',
+  });
+  return { ...createChallengeSession(descriptor, aiPolicy).value, sessionSource: 'random' };
 }
 
 function createChallengeSession(descriptor, aiPolicy = DEFAULT_AI_POLICY) {
@@ -59,6 +57,7 @@ function createChallengeSession(descriptor, aiPolicy = DEFAULT_AI_POLICY) {
       descriptor: boardResult.value.descriptor,
       actions: [],
       aiPolicy,
+      sessionSource: 'challenge',
     },
   };
 }
@@ -178,7 +177,7 @@ export function useGameController({
     const nextSession = descriptor && createChallengeSession(descriptor, DEFAULT_AI_POLICY);
     if (!nextSession?.ok) return nextSession;
 
-    setSession(nextSession.value);
+    setSession({ ...nextSession.value, sessionSource: 'daily' });
     setChallengeError(null);
     setIsReplaying(false);
     setIsReplayPlaying(false);
@@ -233,6 +232,18 @@ export function useGameController({
     setIsReplaying(false);
     setReplayPosition(0);
   }, []);
+  const resetProgression = useCallback(
+    (confirmed) => {
+      if (!confirmed)
+        return { ok: false, error: { code: 'progression_reset_confirmation_required' } };
+      const reset = progressionStorage?.reset?.();
+      if (!reset?.ok)
+        return reset ?? { ok: false, error: { code: 'progression_storage_unavailable' } };
+      setProgressionProfile(reset.value);
+      return reset;
+    },
+    [progressionStorage],
+  );
 
   useEffect(() => {
     if (
@@ -339,7 +350,7 @@ export function useGameController({
     };
     const facts = deriveCompletedGameFacts(replay, {
       completedAt: now().toISOString(),
-      sessionSource: 'challenge',
+      sessionSource: session.sessionSource ?? 'unknown',
     });
     if (!facts.ok) return;
     // This is a one-time synchronization from a completed, verified replay into local storage.
@@ -374,6 +385,7 @@ export function useGameController({
     progression: {
       stats: getProfileStats(progressionProfile),
       unlocks: progressionProfile.unlocks,
+      reset: resetProgression,
     },
     replay: {
       isAvailable: Boolean(session.descriptor && session.actions.length),

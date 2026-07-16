@@ -9,8 +9,10 @@ export function createProgressionStorage({ storage, key = KEY } = {}) {
         const value = storage.getItem(key);
         if (value == null) return ok(createProfile());
         const parsed = JSON.parse(value);
-        return parsed?.progressionVersion === PROGRESSION_VERSION && Array.isArray(parsed.facts)
-          ? ok(parsed)
+        return parsed?.progressionVersion === PROGRESSION_VERSION &&
+          Array.isArray(parsed.facts) &&
+          Array.isArray(parsed.unlocks)
+          ? ok({ ...parsed, recordIds: parsed.recordIds ?? parsed.facts.map((fact) => fact.id) })
           : fail('progression_storage_incompatible');
       } catch {
         return fail('progression_storage_corrupt');
