@@ -68,4 +68,19 @@ describe('AI policy', () => {
 
     expect(selectAiAction(state, config)).toBeNull();
   });
+
+  it('keeps normal balanced behavior compatible with the original selector call shape', () => {
+    const state = createInitialState([
+      [createCell(), createCell()],
+      [createCell(), createCell()],
+    ]);
+
+    expect(selectAiAction(state, config, () => 0.25)).toEqual(
+      selectAiAction(state, config, () => 0.25, {
+        aiPolicyVersion: '1',
+        difficulty: 'normal',
+        style: 'balanced',
+      }),
+    );
+  });
 });
