@@ -99,4 +99,20 @@ describe('AI policy', () => {
       player: PLAYERS.ai,
     });
   });
+
+  it('chooses the same hard action for public-equivalent hidden layouts', () => {
+    const first = createInitialState([
+      [{ ...createCell({ neighborMines: 1 }), isRevealed: true }, createCell({ isMine: true })],
+      [createCell({ isMine: false }), createCell({ isMine: false })],
+    ]);
+    const second = createInitialState([
+      [{ ...createCell({ neighborMines: 1 }), isRevealed: true }, createCell({ isMine: false })],
+      [createCell({ isMine: true }), createCell({ isMine: false })],
+    ]);
+    const hard = { aiPolicyVersion: '1', difficulty: 'hard', style: 'conservative' };
+
+    expect(selectAiAction(first, config, () => 0, hard)).toEqual(
+      selectAiAction(second, config, () => 0, hard),
+    );
+  });
 });

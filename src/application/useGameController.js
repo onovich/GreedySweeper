@@ -271,6 +271,7 @@ export function useGameController({
           descriptor: session.descriptor,
           actions: session.actions,
           expectedSummary: summary,
+          aiPolicy: session.aiPolicy,
         },
         savedAt: now().toISOString(),
       }),
@@ -307,6 +308,7 @@ export function useGameController({
       step: stepReplay,
       reset: resetReplay,
       exit: exitReplay,
+      aiPolicy: session.aiPolicy,
     },
   };
 }

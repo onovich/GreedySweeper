@@ -21,7 +21,8 @@ export function ReplayControls({ replay }) {
       aria-label="Replay controls"
     >
       <p className="text-xs font-bold text-teal-200">
-        Replay {replay.position} / {replay.total}
+        Replay {replay.position} / {replay.total} · {replay.aiPolicy?.difficulty ?? 'normal'} /{' '}
+        {replay.aiPolicy?.style ?? 'balanced'}
       </p>
       <div className="flex flex-wrap gap-2">
         <button type="button" onClick={replay.togglePlay} className="replay-button">

@@ -63,6 +63,12 @@ for (const filePath of filesBelow(applicationRoot).filter((file) => /\.(js|jsx)$
     }
   }
 }
+for (const filePath of filesBelow(join(gameRoot, 'replay')).filter((file) => /\.js$/.test(file))) {
+  const source = readFileSync(filePath, 'utf8');
+  if (/from\s+['"][^'"]*\/ai\//.test(source)) {
+    violations.push(`${relative(root, filePath)} must not import AI policy implementation.`);
+  }
+}
 
 if (violations.length > 0) {
   console.error('Architecture check failed:\n' + violations.map((item) => `- ${item}`).join('\n'));
