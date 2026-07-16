@@ -11,7 +11,7 @@ import {
 describe('Phase 2 protocol contracts', () => {
   it('creates a serializable descriptor without leaking a board solution', () => {
     const descriptor = createChallengeDescriptor({
-      seed: 123456789,
+      seed: '123456789',
       board: { rows: 3, columns: 4, totalMines: 2 },
     });
 
@@ -19,7 +19,7 @@ describe('Phase 2 protocol contracts', () => {
       rulesVersion: '1',
       challengeVersion: '1',
       board: { rows: 3, columns: 4, totalMines: 2 },
-      seed: 123456789,
+      seed: '123456789',
       mode: 'standard',
     });
     expect(JSON.parse(JSON.stringify(descriptor))).toEqual(descriptor);
