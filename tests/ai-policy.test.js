@@ -83,4 +83,20 @@ describe('AI policy', () => {
       }),
     );
   });
+
+  it('uses injected random legal candidates for easy mode before deterministic inference', () => {
+    const state = createInitialState([
+      [{ ...createCell({ neighborMines: 1 }), isRevealed: true }, createCell(), createCell()],
+      [createCell(), { ...createCell(), isRevealed: true }, { ...createCell(), isRevealed: true }],
+    ]);
+    const threeColumns = { rows: 2, columns: 3, totalMines: 1 };
+    const policy = { aiPolicyVersion: '1', difficulty: 'easy', style: 'balanced' };
+
+    expect(selectAiAction(state, threeColumns, () => 0.75, policy)).toEqual({
+      type: ACTION_TYPES.reveal,
+      row: 1,
+      column: 0,
+      player: PLAYERS.ai,
+    });
+  });
 });

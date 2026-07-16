@@ -13,12 +13,16 @@ export function selectAiAction(
   const policyValidation = validateAiPolicy(policy);
   if (!policyValidation.ok) return null;
   const publicView = createAiPublicView(state, config);
+  const hidden = getHiddenCandidates(publicView);
+  if (hidden.length === 0) return null;
+
+  if (policyValidation.value.difficulty === 'easy') {
+    const choice = hidden[Math.floor(random() * hidden.length)];
+    return createRevealAction(choice.row, choice.column, PLAYERS.ai);
+  }
+
   const certainAction = selectCertainAction(publicView);
   if (certainAction) return certainAction;
-
-  const hidden = getHiddenCandidates(publicView);
-
-  if (hidden.length === 0) return null;
   const choice = hidden[Math.floor(random() * hidden.length)];
   return createRevealAction(choice.row, choice.column, PLAYERS.ai);
 }
