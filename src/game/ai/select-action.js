@@ -3,6 +3,7 @@ import { PLAYERS, createRevealAction } from '../model/contracts';
 import { getHiddenCandidates, selectCertainAction } from './candidates';
 import { DEFAULT_AI_POLICY, validateAiPolicy } from './policy-config';
 import { createAiPublicView } from './public-view';
+import { selectUtilityCandidate } from './utility';
 
 export function selectAiAction(
   state,
@@ -23,6 +24,12 @@ export function selectAiAction(
 
   const certainAction = selectCertainAction(publicView);
   if (certainAction) return certainAction;
+
+  const { difficulty, style } = policyValidation.value;
+  if (difficulty === 'hard' || style !== 'balanced') {
+    const choice = selectUtilityCandidate(publicView, hidden, style);
+    return createRevealAction(choice.row, choice.column, PLAYERS.ai);
+  }
   const choice = hidden[Math.floor(random() * hidden.length)];
   return createRevealAction(choice.row, choice.column, PLAYERS.ai);
 }
