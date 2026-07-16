@@ -33,6 +33,9 @@ describe('GameScreen', () => {
         onReveal={vi.fn()}
         onFlag={vi.fn()}
         onRestart={vi.fn()}
+        aiPolicy={{ aiPolicyVersion: '1', difficulty: 'normal', style: 'balanced' }}
+        isAiPolicyLocked={false}
+        onAiPolicyChange={vi.fn()}
       />,
     );
 
@@ -40,6 +43,7 @@ describe('GameScreen', () => {
     expect(screen.getByRole('button', { name: '重新开始' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Row 1, column 1: hidden' })).toBeTruthy();
     expect(screen.getByLabelText('Challenge code')).toBeTruthy();
+    expect(screen.getByLabelText('AI difficulty')).toBeTruthy();
     expect(screen.getByText('刺激计分规则')).toBeTruthy();
   });
 });

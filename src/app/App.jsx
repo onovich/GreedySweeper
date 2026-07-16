@@ -18,6 +18,9 @@ export function App() {
       challengeDescriptor={controller.challengeDescriptor}
       actionLog={controller.actionLog}
       historyEntries={controller.historyEntries}
+      aiPolicy={controller.aiPolicy}
+      isAiPolicyLocked={controller.isAiPolicyLocked}
+      onAiPolicyChange={controller.setAiPolicy}
       replay={controller.replay}
     />
   );

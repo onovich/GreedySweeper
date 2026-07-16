@@ -19,6 +19,9 @@ export function GameScreen({
   challengeDescriptor,
   actionLog = [],
   historyEntries = [],
+  aiPolicy,
+  isAiPolicyLocked,
+  onAiPolicyChange,
   replay = {},
 }) {
   const isHumanTurn =
@@ -54,6 +57,8 @@ export function GameScreen({
           </div>
           <ScorePanel player="ai" label="AI" score={gameState.aiScore} isActive={isAiThinking} />
         </section>
+
+        <AiPolicyPanel policy={aiPolicy} isLocked={isAiPolicyLocked} onChange={onAiPolicyChange} />
 
         {isAiThinking && (
           <p
@@ -107,6 +112,44 @@ export function GameScreen({
         </footer>
       </section>
     </main>
+  );
+}
+
+function AiPolicyPanel({ policy, isLocked, onChange }) {
+  if (!policy) return null;
+  return (
+    <section
+      className="mb-4 rounded-2xl border border-gray-800 bg-gray-950 p-3"
+      aria-label="AI policy"
+    >
+      <div className="flex flex-wrap items-center gap-2 text-xs text-gray-300">
+        <label htmlFor="ai-difficulty">AI difficulty</label>
+        <select
+          id="ai-difficulty"
+          value={policy.difficulty}
+          disabled={isLocked}
+          onChange={(event) => onChange?.({ ...policy, difficulty: event.target.value })}
+          className="rounded-lg border border-gray-700 bg-gray-900 px-2 py-1 text-gray-100 disabled:opacity-60"
+        >
+          <option value="easy">Easy</option>
+          <option value="normal">Normal</option>
+          <option value="hard">Hard</option>
+        </select>
+        <label htmlFor="ai-style">AI style</label>
+        <select
+          id="ai-style"
+          value={policy.style}
+          disabled={isLocked}
+          onChange={(event) => onChange?.({ ...policy, style: event.target.value })}
+          className="rounded-lg border border-gray-700 bg-gray-900 px-2 py-1 text-gray-100 disabled:opacity-60"
+        >
+          <option value="balanced">Balanced</option>
+          <option value="conservative">Conservative</option>
+          <option value="greedy">Greedy</option>
+        </select>
+        <span>{isLocked ? 'Locked for this game.' : 'Choose before the first move.'}</span>
+      </div>
+    </section>
   );
 }
 

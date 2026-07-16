@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { selectAiAction } from '../game/ai/select-action';
+import {
+  AI_POLICY_ERROR_CODES,
+  DEFAULT_AI_POLICY,
+  createAiPolicy,
+  validateAiPolicy,
+} from '../game/ai/policy-config';
 import { createChallengeBoard } from '../game/challenge/board';
 import { decodeChallengeCode } from '../game/challenge/code';
 import { createDailyChallenge } from '../game/challenge/daily';
@@ -18,15 +24,16 @@ import { createReplaySummary } from '../game/replay/integrity';
 import { replayGameAt } from '../game/replay/replay-engine';
 import { createHistoryEntry } from './storage/history-storage';
 
-function createRandomSession(config, random) {
+function createRandomSession(config, random, aiPolicy = DEFAULT_AI_POLICY) {
   return {
     gameState: createInitialState(createBoard(config, random)),
     descriptor: null,
     actions: [],
+    aiPolicy,
   };
 }
 
-function createChallengeSession(descriptor) {
+function createChallengeSession(descriptor, aiPolicy = DEFAULT_AI_POLICY) {
   const boardResult = createChallengeBoard(descriptor);
   if (!boardResult.ok) return boardResult;
 
@@ -36,6 +43,7 @@ function createChallengeSession(descriptor) {
       gameState: createInitialState(boardResult.value.board),
       descriptor: boardResult.value.descriptor,
       actions: [],
+      aiPolicy,
     },
   };
 }
@@ -49,6 +57,7 @@ export function useGameController({
   now = () => new Date(),
 } = {}) {
   const [session, setSession] = useState(() => createRandomSession(config, random));
+  const [pendingAiPolicy, setPendingAiPolicy] = useState(DEFAULT_AI_POLICY);
   const [challengeError, setChallengeError] = useState(null);
   const [isReplaying, setIsReplaying] = useState(false);
   const [isReplayPlaying, setIsReplayPlaying] = useState(false);
@@ -107,35 +116,39 @@ export function useGameController({
     setReplayPosition(0);
     setChallengeError(null);
     setSession((current) => {
-      if (current.descriptor) return createChallengeSession(current.descriptor).value;
-      return createRandomSession(config, random);
+      if (current.descriptor)
+        return createChallengeSession(current.descriptor, pendingAiPolicy).value;
+      return createRandomSession(config, random, pendingAiPolicy);
     });
-  }, [config, random]);
+  }, [config, pendingAiPolicy, random]);
 
-  const startChallenge = useCallback((code) => {
-    const decoded = decodeChallengeCode(code);
-    if (!decoded.ok) {
-      setChallengeError(decoded.error);
+  const startChallenge = useCallback(
+    (code) => {
+      const decoded = decodeChallengeCode(code);
+      if (!decoded.ok) {
+        setChallengeError(decoded.error);
+        return decoded;
+      }
+
+      const nextSession = createChallengeSession(decoded.value, pendingAiPolicy);
+      if (!nextSession.ok) {
+        setChallengeError(nextSession.error);
+        return nextSession;
+      }
+
+      setSession(nextSession.value);
+      setChallengeError(null);
+      setIsReplaying(false);
+      setIsReplayPlaying(false);
+      setReplayPosition(0);
       return decoded;
-    }
-
-    const nextSession = createChallengeSession(decoded.value);
-    if (!nextSession.ok) {
-      setChallengeError(nextSession.error);
-      return nextSession;
-    }
-
-    setSession(nextSession.value);
-    setChallengeError(null);
-    setIsReplaying(false);
-    setIsReplayPlaying(false);
-    setReplayPosition(0);
-    return decoded;
-  }, []);
+    },
+    [pendingAiPolicy],
+  );
 
   const startDailyChallenge = useCallback(() => {
     const descriptor = createDailyChallenge(now());
-    const nextSession = descriptor && createChallengeSession(descriptor);
+    const nextSession = descriptor && createChallengeSession(descriptor, DEFAULT_AI_POLICY);
     if (!nextSession?.ok) return nextSession;
 
     setSession(nextSession.value);
@@ -145,6 +158,19 @@ export function useGameController({
     setReplayPosition(0);
     return { ok: true, value: nextSession.value.descriptor };
   }, [now]);
+
+  const setAiPolicy = useCallback(
+    (policy) => {
+      const validation = validateAiPolicy(createAiPolicy(policy));
+      if (!validation.ok) return validation;
+      if (session.actions.length > 0)
+        return { ok: false, error: { code: AI_POLICY_ERROR_CODES.locked } };
+      setPendingAiPolicy(validation.value);
+      setSession((current) => ({ ...current, aiPolicy: validation.value }));
+      return validation;
+    },
+    [session.actions.length],
+  );
 
   const startReplay = useCallback(() => {
     if (!session.descriptor || session.actions.length === 0) return;
@@ -190,7 +216,7 @@ export function useGameController({
         }
 
         const activeConfig = current.descriptor?.board ?? config;
-        const action = selectAiAction(current.gameState, activeConfig, random);
+        const action = selectAiAction(current.gameState, activeConfig, random, current.aiPolicy);
         if (!action) return current;
 
         const transition = applyAction(current.gameState, action, activeConfig, scoreConfig);
@@ -266,6 +292,9 @@ export function useGameController({
     challengeError,
     challengeDescriptor: session.descriptor,
     actionLog: session.actions,
+    aiPolicy: session.aiPolicy,
+    isAiPolicyLocked: session.actions.length > 0,
+    setAiPolicy,
     historyEntries,
     replay: {
       isAvailable: Boolean(session.descriptor && session.actions.length),

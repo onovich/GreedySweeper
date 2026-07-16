@@ -23,6 +23,7 @@ export const AI_POLICY_ERROR_CODES = Object.freeze({
   unsupportedVersion: 'ai_policy_version_unsupported',
   invalidDifficulty: 'ai_policy_difficulty_invalid',
   invalidStyle: 'ai_policy_style_invalid',
+  locked: 'ai_policy_locked',
 });
 
 export function createAiPolicy(policy = {}) {
