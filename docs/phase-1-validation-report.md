@@ -62,3 +62,9 @@ The production build includes `/GreedySweeper/assets/...` paths in `dist/index.h
 ## Residual Risk
 
 The repository inherits an existing custom GitHub Pages domain. Its configuration was observed and preserved; the standard GitHub Pages URL correctly redirects to it.
+
+## Pages HTTPS Repair (2026-07-16)
+
+The GitHub Pages REST update was applied with `https_enforced=true`. A subsequent `GET /repos/onovich/GreedySweeper/pages` returned the HTTPS URL `https://blog.onovich.com/GreedySweeper/`, `https_enforced: true`, `build_type: workflow`, and an approved certificate for `blog.onovich.com` (expires 2026-10-13).
+
+The planner's prior browser failure is resolved: the executor confirmed in a real browser that the secure page displays successfully and the game is playable. No gameplay, build, workflow, DNS, or custom-domain source files changed for this repair.
