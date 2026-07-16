@@ -12,7 +12,8 @@
     "test:run": "vitest run",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "arch:check": "node scripts/architecture-check.mjs"
+    "arch:check": "node scripts/architecture-check.mjs",
+    "ai:evaluate": "node scripts/evaluate-ai-policies.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.24.0",

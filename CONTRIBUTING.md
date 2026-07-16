@@ -24,3 +24,4 @@ Use the initialized project Git wrapper with explicit paths and Conventional Com
 - [ ] Documentation and local commands still match the repository.
 - [ ] Replay changes retain explicit protocol versions and validate deterministic replay integrity.
 - [ ] Browser storage is accessed only through `src/application/storage/` and has a failure fallback.
+- [ ] AI policy changes preserve `normal + balanced` compatibility and do not read hidden mine locations.

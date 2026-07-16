@@ -47,4 +47,8 @@ Development proceeds in small playable phases, with architecture and validation 
 
 Enter a `GS1` challenge code to reproduce a seeded board. Every applied human and AI command is recorded, so playback rebuilds the game through the pure engine rather than from a UI snapshot. The Daily button derives the challenge from the UTC date. Completed challenge replays are stored locally with a bounded, versioned history; the app continues normally if browser storage is unavailable.
 
+## AI policies
+
+Before the first move, choose Easy, Normal, or Hard and a Balanced, Conservative, or Greedy style. Normal + Balanced preserves the original AI behavior. AI reads only public board information; see the [Phase 3 validation report](docs/phase-3-validation-report.md).
+
 GitHub Pages deployment uses the official Actions workflow and publishes the Vite build under `/GreedySweeper/`.<br/>**GitHub Pages 使用官方 Actions 工作流部署，并在 `/GreedySweeper/` 路径下发布 Vite 构建产物。**
