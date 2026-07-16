@@ -1,11 +1,23 @@
+import { useState } from 'react';
 import { Cpu, Info, RotateCcw, Trophy } from 'lucide-react';
 import { BOARD_CONFIG, SCORE_CONFIG } from '../../game/config/game-config';
 import { getRemainingMines, getWinner } from '../../game/selectors/game-selectors';
 import { ScorePanel } from '../components/ScorePanel';
 import { GameBoard } from '../components/GameBoard';
+import { ReplayControls } from '../components/ReplayControls';
 
-export function GameScreen({ gameState, isAiThinking, onReveal, onFlag, onRestart }) {
-  const isHumanTurn = !gameState.gameOver && gameState.currentPlayer === 'human';
+export function GameScreen({
+  gameState,
+  isAiThinking,
+  onReveal,
+  onFlag,
+  onRestart,
+  onStartChallenge,
+  challengeError,
+  replay = {},
+}) {
+  const isHumanTurn =
+    !replay.isReplaying && !gameState.gameOver && gameState.currentPlayer === 'human';
   const remainingMines = getRemainingMines(gameState, BOARD_CONFIG);
 
   return (
@@ -56,6 +68,11 @@ export function GameScreen({ gameState, isAiThinking, onReveal, onFlag, onRestar
 
         {gameState.gameOver && <GameOverBanner gameState={gameState} />}
 
+        <section className="mb-4 flex flex-col gap-3 rounded-2xl border border-gray-800 bg-gray-950 p-3 sm:flex-row sm:items-center sm:justify-between">
+          <ChallengeCodeForm onStartChallenge={onStartChallenge} error={challengeError} />
+          <ReplayControls replay={replay} />
+        </section>
+
         <footer className="flex flex-col gap-4 rounded-2xl border border-gray-800 bg-gray-950 p-4 sm:flex-row sm:items-stretch sm:justify-between sm:p-5">
           <button
             type="button"
@@ -72,6 +89,43 @@ export function GameScreen({ gameState, isAiThinking, onReveal, onFlag, onRestar
         </footer>
       </section>
     </main>
+  );
+}
+
+function ChallengeCodeForm({ onStartChallenge, error }) {
+  const [code, setCode] = useState('');
+
+  function submit(event) {
+    event.preventDefault();
+    onStartChallenge?.(code);
+  }
+
+  return (
+    <form onSubmit={submit} className="w-full sm:max-w-md">
+      <label htmlFor="challenge-code" className="mb-1 block text-xs font-bold text-gray-300">
+        Challenge code
+      </label>
+      <div className="flex gap-2">
+        <input
+          id="challenge-code"
+          value={code}
+          onChange={(event) => setCode(event.target.value)}
+          placeholder="GS1. …"
+          className="min-w-0 flex-1 rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm text-gray-100 placeholder:text-gray-600 focus:border-teal-400 focus:outline-none"
+        />
+        <button
+          type="submit"
+          className="rounded-lg bg-teal-700 px-3 py-2 text-sm font-bold text-white hover:bg-teal-600"
+        >
+          Start
+        </button>
+      </div>
+      {error && (
+        <p role="alert" className="mt-1 text-xs text-red-300">
+          Invalid challenge code: {error.code}
+        </p>
+      )}
+    </form>
   );
 }
 

@@ -11,6 +11,9 @@ export function App() {
       onReveal={controller.reveal}
       onFlag={controller.flag}
       onRestart={controller.restart}
+      onStartChallenge={controller.startChallenge}
+      challengeError={controller.challengeError}
+      replay={controller.replay}
     />
   );
 }

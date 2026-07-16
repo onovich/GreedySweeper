@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  .replay-button {
+    @apply inline-flex items-center gap-1 rounded-lg border border-teal-800 bg-gray-900 px-2 py-1.5 text-xs font-bold text-teal-100 transition-colors hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+}
+
 :root {
   color-scheme: dark;
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
