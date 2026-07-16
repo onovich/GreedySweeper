@@ -30,6 +30,8 @@ Delivered:
 
 ### Phase 2 - Seeded Challenges, Action Log, Replay, and Daily Challenge
 
+Status: implemented; awaiting phase acceptance.
+
 Player value: 玩家可以复现同一棋盘、分享挑战码、回看完整对局，并参与无需账号的每日挑战。
 
 Architecture value: 建立确定性种子、版本化动作日志和可验证回放，为联机命令协议奠定基础。

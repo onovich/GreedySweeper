@@ -41,4 +41,8 @@ Development proceeds in small playable phases, with architecture and validation 
 
 ## Deployment
 
+## Seeded challenges and replay
+
+Enter a `GS1` challenge code to reproduce a seeded board. Every applied human and AI command is recorded, so playback rebuilds the game through the pure engine rather than from a UI snapshot. The Daily button derives the challenge from the UTC date. Completed challenge replays are stored locally with a bounded, versioned history; the app continues normally if browser storage is unavailable.
+
 GitHub Pages deployment uses the official Actions workflow and publishes the Vite build under `/GreedySweeper/`.<br/>**GitHub Pages 使用官方 Actions 工作流部署，并在 `/GreedySweeper/` 路径下发布 Vite 构建产物。**

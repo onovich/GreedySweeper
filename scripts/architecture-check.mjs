@@ -3,6 +3,7 @@ import { join, relative, resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
 const gameRoot = join(root, 'src', 'game');
+const applicationRoot = join(root, 'src', 'application');
 const requiredBoundaries = [
   'src/app/App.jsx',
   'src/application',
@@ -10,6 +11,10 @@ const requiredBoundaries = [
   'src/game/model',
   'src/game/engine',
   'src/game/ai',
+  'src/game/challenge',
+  'src/game/random',
+  'src/game/replay',
+  'src/application/storage',
   'src/game/selectors',
   'src/ui/components',
   'src/ui/screens',
@@ -18,6 +23,13 @@ const forbiddenPatterns = [
   { pattern: /from\s+['"]react(?:\/[^'"]*)?['"]/, description: 'React import' },
   { pattern: /from\s+['"][^'"]*\/ui(?:\/[^'"]*)?['"]/, description: 'UI import' },
   { pattern: /\b(document|window|setTimeout|setInterval)\b/, description: 'browser or timer API' },
+];
+const applicationForbiddenPatterns = [
+  { pattern: /from\s+['"][^'"]*\/ui(?:\/[^'"]*)?['"]/, description: 'UI import' },
+  {
+    pattern: /\b(localStorage|sessionStorage)\b/,
+    description: 'browser storage API outside adapter',
+  },
 ];
 
 function filesBelow(directory) {
@@ -42,10 +54,19 @@ for (const filePath of filesBelow(gameRoot).filter((file) => /\.(js|jsx)$/.test(
     }
   }
 }
+for (const filePath of filesBelow(applicationRoot).filter((file) => /\.(js|jsx)$/.test(file))) {
+  if (relative(applicationRoot, filePath).startsWith('storage')) continue;
+  const source = readFileSync(filePath, 'utf8');
+  for (const rule of applicationForbiddenPatterns) {
+    if (rule.pattern.test(source)) {
+      violations.push(`${relative(root, filePath)} contains forbidden ${rule.description}.`);
+    }
+  }
+}
 
 if (violations.length > 0) {
   console.error('Architecture check failed:\n' + violations.map((item) => `- ${item}`).join('\n'));
   process.exit(1);
 }
 
-console.log('Architecture check passed: no forbidden imports or browser/timer APIs in src/game.');
+console.log('Architecture check passed: game purity and application storage boundaries hold.');

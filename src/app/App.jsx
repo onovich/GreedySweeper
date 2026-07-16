@@ -1,11 +1,9 @@
 import { useGameController } from '../application/useGameController';
-import { createHistoryStorage } from '../application/storage/history-storage';
+import { createBrowserHistoryStorage } from '../application/storage/history-storage';
 import { GameScreen } from '../ui/screens/GameScreen';
 
 export function App() {
-  const controller = useGameController({
-    historyStorage: createHistoryStorage({ storage: window.localStorage }),
-  });
+  const controller = useGameController({ historyStorage: createBrowserHistoryStorage() });
 
   return (
     <GameScreen

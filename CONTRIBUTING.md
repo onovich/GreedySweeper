@@ -22,3 +22,5 @@ Use the initialized project Git wrapper with explicit paths and Conventional Com
 - [ ] UI/controller code does not duplicate engine or AI logic.
 - [ ] New text is readable Chinese or English, never mojibake.
 - [ ] Documentation and local commands still match the repository.
+- [ ] Replay changes retain explicit protocol versions and validate deterministic replay integrity.
+- [ ] Browser storage is accessed only through `src/application/storage/` and has a failure fallback.

@@ -12,6 +12,8 @@ app -> ui -> application -> game
 
 - `src/game/` owns serializable state, commands, selectors, board generation, move transitions, and AI policy. It must not import React, UI files, DOM APIs, or timers.
 - `src/application/` owns React lifecycle, AI delays, pointer intent, cancellation, and RNG injection. It calls the game layer rather than re-implementing its rules.
+- `src/game/challenge/`, `src/game/random/`, and `src/game/replay/` define versioned, serializable seeded-board, action-log, replay, and integrity contracts. Replay re-executes the engine and never re-runs AI choice.
+- `src/application/storage/` is the only browser-storage adapter boundary. Storage failures degrade to an empty local history and never enter `src/game/`.
 - `src/ui/` renders state from selectors and sends user intents. It must not calculate score, legal moves, mine counts, turns, or AI choices.
 - `src/app/` composes the controller and screen.
 

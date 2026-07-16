@@ -43,6 +43,14 @@ export function createHistoryStorage({ storage, key = DEFAULT_KEY, limit = DEFAU
   };
 }
 
+export function createBrowserHistoryStorage(options) {
+  try {
+    return createHistoryStorage({ ...options, storage: globalThis.localStorage });
+  } catch {
+    return createHistoryStorage(options);
+  }
+}
+
 export function createHistoryEntry({ id, replay, savedAt }) {
   return { id, replay, savedAt };
 }
