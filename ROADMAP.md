@@ -83,9 +83,7 @@ Exit criteria:
 
 ### Phase 5 - Local Progression, Statistics, and Achievements
 
-Status: implemented; awaiting phase acceptance. Validation evidence: `docs/phase-5-validation-report.md`.
-
-Status: active planning target.
+Status: accepted. Validation evidence: `docs/phase-5-validation-report.md`.
 
 Player value: 提供长期目标、个人纪录、难度战绩和成就反馈。
 
