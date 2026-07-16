@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Cpu, Info, RotateCcw, Trophy } from 'lucide-react';
 import { BOARD_CONFIG, SCORE_CONFIG } from '../../game/config/game-config';
+import { encodeChallengeCode } from '../../game/challenge/code';
 import { getRemainingMines, getWinner } from '../../game/selectors/game-selectors';
 import { ScorePanel } from '../components/ScorePanel';
 import { GameBoard } from '../components/GameBoard';
@@ -13,7 +14,11 @@ export function GameScreen({
   onFlag,
   onRestart,
   onStartChallenge,
+  onStartDailyChallenge,
   challengeError,
+  challengeDescriptor,
+  actionLog = [],
+  historyEntries = [],
   replay = {},
 }) {
   const isHumanTurn =
@@ -69,9 +74,22 @@ export function GameScreen({
         {gameState.gameOver && <GameOverBanner gameState={gameState} />}
 
         <section className="mb-4 flex flex-col gap-3 rounded-2xl border border-gray-800 bg-gray-950 p-3 sm:flex-row sm:items-center sm:justify-between">
-          <ChallengeCodeForm onStartChallenge={onStartChallenge} error={challengeError} />
+          <ChallengeCodeForm
+            onStartChallenge={onStartChallenge}
+            onStartDailyChallenge={onStartDailyChallenge}
+            error={challengeError}
+          />
           <ReplayControls replay={replay} />
         </section>
+
+        <SharePanel
+          descriptor={challengeDescriptor}
+          gameState={gameState}
+          actionCount={actionLog.length}
+        />
+        {historyEntries.length > 0 && (
+          <p className="mb-4 text-xs text-gray-500">Saved replays: {historyEntries.length}</p>
+        )}
 
         <footer className="flex flex-col gap-4 rounded-2xl border border-gray-800 bg-gray-950 p-4 sm:flex-row sm:items-stretch sm:justify-between sm:p-5">
           <button
@@ -92,7 +110,7 @@ export function GameScreen({
   );
 }
 
-function ChallengeCodeForm({ onStartChallenge, error }) {
+function ChallengeCodeForm({ onStartChallenge, onStartDailyChallenge, error }) {
   const [code, setCode] = useState('');
 
   function submit(event) {
@@ -119,6 +137,13 @@ function ChallengeCodeForm({ onStartChallenge, error }) {
         >
           Start
         </button>
+        <button
+          type="button"
+          onClick={onStartDailyChallenge}
+          className="rounded-lg border border-gray-700 px-3 py-2 text-sm font-bold text-gray-200 hover:bg-gray-800"
+        >
+          Daily
+        </button>
       </div>
       {error && (
         <p role="alert" className="mt-1 text-xs text-red-300">
@@ -126,6 +151,54 @@ function ChallengeCodeForm({ onStartChallenge, error }) {
         </p>
       )}
     </form>
+  );
+}
+
+function SharePanel({ descriptor, gameState, actionCount }) {
+  const [status, setStatus] = useState('');
+  if (!descriptor) return null;
+
+  const encoded = encodeChallengeCode(descriptor);
+  if (!encoded.ok) return null;
+  const resultText = `Greedy Sweeper challenge ${encoded.value} | score ${gameState.humanScore}-${gameState.aiScore} | moves ${actionCount}`;
+
+  async function copy(text, message) {
+    try {
+      await navigator.clipboard.writeText(text);
+      setStatus(message);
+    } catch {
+      setStatus('Copy is unavailable in this browser.');
+    }
+  }
+
+  return (
+    <section
+      className="mb-4 rounded-2xl border border-gray-800 bg-gray-950 p-3"
+      aria-label="Challenge sharing"
+    >
+      <p className="break-all text-xs text-gray-400">{encoded.value}</p>
+      <div className="mt-2 flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => copy(encoded.value, 'Challenge code copied.')}
+          className="replay-button"
+        >
+          Copy code
+        </button>
+        <button
+          type="button"
+          onClick={() => copy(resultText, 'Result text copied.')}
+          className="replay-button"
+        >
+          Copy result
+        </button>
+      </div>
+      {status && (
+        <p role="status" className="mt-2 text-xs text-teal-200">
+          {status}
+        </p>
+      )}
+    </section>
   );
 }
 

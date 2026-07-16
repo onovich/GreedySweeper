@@ -1,8 +1,11 @@
 import { useGameController } from '../application/useGameController';
+import { createHistoryStorage } from '../application/storage/history-storage';
 import { GameScreen } from '../ui/screens/GameScreen';
 
 export function App() {
-  const controller = useGameController();
+  const controller = useGameController({
+    historyStorage: createHistoryStorage({ storage: window.localStorage }),
+  });
 
   return (
     <GameScreen
@@ -12,7 +15,11 @@ export function App() {
       onFlag={controller.flag}
       onRestart={controller.restart}
       onStartChallenge={controller.startChallenge}
+      onStartDailyChallenge={controller.startDailyChallenge}
       challengeError={controller.challengeError}
+      challengeDescriptor={controller.challengeDescriptor}
+      actionLog={controller.actionLog}
+      historyEntries={controller.historyEntries}
       replay={controller.replay}
     />
   );

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { selectAiAction } from '../game/ai/select-action';
 import { createChallengeBoard } from '../game/challenge/board';
 import { decodeChallengeCode } from '../game/challenge/code';
+import { createDailyChallenge } from '../game/challenge/daily';
 import { BOARD_CONFIG, SCORE_CONFIG, TIMING_CONFIG } from '../game/config/game-config';
 import { createBoard } from '../game/engine/board';
 import { applyAction } from '../game/engine/transition';
@@ -13,7 +14,9 @@ import {
 } from '../game/model/contracts';
 import { createInitialState } from '../game/model/factories';
 import { appendActionRecord } from '../game/replay/action-log';
+import { createReplaySummary } from '../game/replay/integrity';
 import { replayGameAt } from '../game/replay/replay-engine';
+import { createHistoryEntry } from './storage/history-storage';
 
 function createRandomSession(config, random) {
   return {
@@ -42,13 +45,20 @@ export function useGameController({
   scoreConfig = SCORE_CONFIG,
   timing = TIMING_CONFIG,
   random = Math.random,
+  historyStorage = null,
+  now = () => new Date(),
 } = {}) {
   const [session, setSession] = useState(() => createRandomSession(config, random));
   const [challengeError, setChallengeError] = useState(null);
   const [isReplaying, setIsReplaying] = useState(false);
   const [isReplayPlaying, setIsReplayPlaying] = useState(false);
   const [replayPosition, setReplayPosition] = useState(0);
+  const [historyEntries] = useState(() => {
+    const result = historyStorage?.load?.();
+    return result?.ok ? result.value : [];
+  });
   const stateRef = useRef(session);
+  const savedHistoryRef = useRef(null);
 
   const replayResult = useMemo(() => {
     if (!isReplaying || !session.descriptor) return null;
@@ -122,6 +132,19 @@ export function useGameController({
     setReplayPosition(0);
     return decoded;
   }, []);
+
+  const startDailyChallenge = useCallback(() => {
+    const descriptor = createDailyChallenge(now());
+    const nextSession = descriptor && createChallengeSession(descriptor);
+    if (!nextSession?.ok) return nextSession;
+
+    setSession(nextSession.value);
+    setChallengeError(null);
+    setIsReplaying(false);
+    setIsReplayPlaying(false);
+    setReplayPosition(0);
+    return { ok: true, value: nextSession.value.descriptor };
+  }, [now]);
 
   const startReplay = useCallback(() => {
     if (!session.descriptor || session.actions.length === 0) return;
@@ -198,6 +221,39 @@ export function useGameController({
     return () => window.clearTimeout(timeoutId);
   }, [isReplaying, isReplayPlaying, replayPosition, session.actions.length, timing.replayDelayMs]);
 
+  useEffect(() => {
+    if (
+      !historyStorage ||
+      !session.descriptor ||
+      !session.gameState.gameOver ||
+      !session.actions.length
+    ) {
+      return;
+    }
+
+    const summary = createReplaySummary({
+      descriptor: session.descriptor,
+      state: session.gameState,
+      actionCount: session.actions.length,
+    });
+    if (savedHistoryRef.current === summary.hash) return;
+
+    const saved = historyStorage.save(
+      createHistoryEntry({
+        id: summary.hash,
+        replay: {
+          descriptor: session.descriptor,
+          actions: session.actions,
+          expectedSummary: summary,
+        },
+        savedAt: now().toISOString(),
+      }),
+    );
+    if (saved.ok) {
+      savedHistoryRef.current = summary.hash;
+    }
+  }, [historyStorage, now, session]);
+
   return {
     gameState,
     isAiThinking:
@@ -206,9 +262,11 @@ export function useGameController({
     flag,
     restart,
     startChallenge,
+    startDailyChallenge,
     challengeError,
     challengeDescriptor: session.descriptor,
     actionLog: session.actions,
+    historyEntries,
     replay: {
       isAvailable: Boolean(session.descriptor && session.actions.length),
       isReplaying,
