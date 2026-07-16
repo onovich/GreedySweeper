@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { GameScreen } from '../src/ui/screens/GameScreen';
 import {
@@ -69,5 +69,25 @@ describe('GameScreen', () => {
 
     expect(screen.getByRole('button', { name: 'Bank rewards and end turn' })).toBeTruthy();
     expect(screen.getByLabelText('Game mode')).toBeTruthy();
+  });
+
+  it('requires confirmation before clearing progression and leaves replay history visible', () => {
+    const reset = vi.fn(() => ({ ok: true }));
+    render(
+      <GameScreen
+        gameState={createInitialState([[createCell()]])}
+        isAiThinking={false}
+        onReveal={vi.fn()}
+        onFlag={vi.fn()}
+        onRestart={vi.fn()}
+        historyEntries={[{}]}
+        progression={{ stats: { completedGames: 1, wins: 1, winRate: 1 }, unlocks: [], reset }}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Clear local progression' }));
+    expect(reset).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm clear local progression' }));
+    expect(reset).toHaveBeenCalledWith(true);
+    expect(screen.getByText('Saved replays: 1')).toBeTruthy();
   });
 });

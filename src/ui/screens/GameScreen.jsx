@@ -142,8 +142,24 @@ export function GameScreen({
 }
 
 function ProgressionPanel({ progression }) {
+  const [confirming, setConfirming] = useState(false);
+  const [message, setMessage] = useState('');
   if (!progression) return null;
   const { stats, unlocks } = progression;
+  function reset() {
+    if (!confirming) {
+      setConfirming(true);
+      setMessage('Confirm to clear local progression only. Saved replays stay intact.');
+      return;
+    }
+    const result = progression.reset?.(true);
+    setConfirming(false);
+    setMessage(
+      result?.ok
+        ? 'Local progression cleared. Saved replays were not changed.'
+        : `Could not clear progression: ${result?.error?.code ?? 'unavailable'}`,
+    );
+  }
   return (
     <section
       className="mb-4 rounded-2xl border border-gray-800 bg-gray-950 p-3"
@@ -157,6 +173,18 @@ function ProgressionPanel({ progression }) {
       <p className="mt-1 text-xs text-gray-500">
         Achievements: {unlocks.length}/10. Stored only in this browser; no account or network sync.
       </p>
+      <button
+        type="button"
+        onClick={reset}
+        className="mt-2 rounded-lg border border-gray-700 px-2 py-1 text-xs text-gray-200 hover:bg-gray-800"
+      >
+        {confirming ? 'Confirm clear local progression' : 'Clear local progression'}
+      </button>
+      {message && (
+        <p role="status" className="mt-2 text-xs text-gray-400">
+          {message}
+        </p>
+      )}
     </section>
   );
 }

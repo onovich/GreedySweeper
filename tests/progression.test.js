@@ -44,4 +44,18 @@ describe('progression profile', () => {
       ]),
     );
   });
+  it('retains duplicate ids across the 1000-fact rollup and tracks dimension outcomes', () => {
+    let profile = createProfile();
+    for (let index = 0; index < 1001; index += 1)
+      profile = appendCompletedFacts(profile, {
+        ...fact,
+        id: `id-${index}`,
+        winner: index % 2 ? 'ai' : 'human',
+      }).profile;
+    expect(appendCompletedFacts(profile, { ...fact, id: 'id-0' }).added).toBe(false);
+    const stats = getProfileStats(profile);
+    expect(stats).toMatchObject({ completedGames: 1001 });
+    expect(stats.modes.greed).toMatchObject({ games: 1001, wins: 501, losses: 500 });
+    expect(stats.difficulties.easy.winRate).toBeCloseTo(501 / 1001);
+  });
 });
