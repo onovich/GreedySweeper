@@ -49,7 +49,7 @@ Exit criteria:
 
 Status: implemented; awaiting phase acceptance.
 
-Status: active planning target.
+Status: accepted. Validation evidence: `docs/phase-3-validation-report.md`.
 
 Player value: 提供简单、普通、困难及可感知的贪婪/保守 AI 风格。
 
@@ -63,6 +63,8 @@ Exit criteria:
 - Phase 2 回放协议可以完整重现 AI 对局。
 
 ### Phase 4 - Greed and Push-Your-Luck Mechanics
+
+Status: active planning target.
 
 Player value: 强化“贪婪扫雷”的辨识度，让继续行动、主动收手和风险收益成为明确决策。
 

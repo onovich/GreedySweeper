@@ -2,7 +2,7 @@
 
 workspace: D:\WebProjects\GreedySweeper
 created_at: 2026-07-16T04:15:59.4719751+08:00
-updated_at: 2026-07-16T20:30:00+08:00
+updated_at: 2026-07-17T00:20:00+08:00
 
 planner:
   role: architect
@@ -17,12 +17,12 @@ executor:
   evidence: current active programming executor thread in the same workspace.
 
 idempotency:
-  active_goal_guide: docs/phase-3-ai-difficulty-play-styles-goal-mode-execution-guide.md
-  active_goal_phase: Phase 3 - AI difficulty and play styles
-  last_planner_dispatch: 2026-07-16T20:28:00+08:00
-  last_planner_dispatch_status: sent
-  last_planner_dispatch_guide: docs/phase-3-ai-difficulty-play-styles-goal-mode-execution-guide.md
-  last_planner_dispatch_commit: 341210b
+  active_goal_guide: docs/phase-4-greed-risk-mechanics-goal-mode-execution-guide.md
+  active_goal_phase: Phase 4 - Greed and push-your-luck mechanics
+  last_planner_dispatch: pending
+  last_planner_dispatch_status: pending
+  last_planner_dispatch_guide: docs/phase-4-greed-risk-mechanics-goal-mode-execution-guide.md
+  last_planner_dispatch_commit: pending
   last_executor_report_commit: d8fe34c
   last_check_status: pass
   last_completed_phase: Phase 3 - AI difficulty and play styles
