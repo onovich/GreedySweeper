@@ -19,9 +19,9 @@ executor:
 idempotency:
   active_goal_guide: docs/phase-2-seeded-challenges-replay-goal-mode-execution-guide.md
   active_goal_phase: Phase 2 - Seeded challenges, action log, replay, and daily challenge
-  last_planner_dispatch: pending
-  last_planner_dispatch_status: pending
+  last_planner_dispatch: 2026-07-16T19:03:00+08:00
+  last_planner_dispatch_status: sent
   last_planner_dispatch_guide: docs/phase-2-seeded-challenges-replay-goal-mode-execution-guide.md
-  last_planner_dispatch_commit: pending
+  last_planner_dispatch_commit: 1965000
   last_executor_report_commit: 2263238
   last_check_status: pass
