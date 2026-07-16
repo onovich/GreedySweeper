@@ -12,6 +12,7 @@ npm run arch:check
 npm run build
 npm run ai:evaluate
 npm run greed:evaluate
+npm run progression:evaluate
 ```
 
 Use the initialized project Git wrapper with explicit paths and Conventional Commit messages. Do not use `--no-verify`, force push, or bypass validation.

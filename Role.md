@@ -24,9 +24,9 @@ idempotency:
   last_planner_dispatch_guide: docs/phase-5-local-progression-statistics-achievements-goal-mode-execution-guide.md
   last_planner_dispatch_commit: cb5b913
   last_executor_report_commit: aada31e
-  last_executor_report_status: accepted
+  last_executor_report_status: ready_for_check
   last_executor_report_at: 2026-07-17T02:45:00+08:00
-  last_executor_report_guide: docs/phase-4-greed-risk-mechanics-goal-mode-execution-guide.md
+  last_executor_report_guide: docs/phase-5-local-progression-statistics-achievements-goal-mode-execution-guide.md
   last_check_status: pass
   last_completed_phase: Phase 4 - Greed and push-your-luck mechanics
   last_completed_validation: format:check, lint, 68 tests, ai:evaluate, greed:evaluate, arch:check, build PASS

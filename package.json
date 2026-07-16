@@ -14,7 +14,8 @@
     "format:check": "prettier --check .",
     "arch:check": "node scripts/architecture-check.mjs",
     "ai:evaluate": "node scripts/evaluate-ai-policies.mjs",
-    "greed:evaluate": "node scripts/evaluate-greed-balance.mjs"
+    "greed:evaluate": "node scripts/evaluate-greed-balance.mjs",
+    "progression:evaluate": "node scripts/evaluate-progression.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.24.0",

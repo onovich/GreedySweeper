@@ -27,6 +27,7 @@ export function GameScreen({
   isModeLocked,
   onModeChange,
   replay = {},
+  progression,
 }) {
   const isHumanTurn =
     !replay.isReplaying && !gameState.gameOver && gameState.currentPlayer === 'human';
@@ -116,6 +117,7 @@ export function GameScreen({
           gameState={gameState}
           actionCount={actionLog.length}
         />
+        <ProgressionPanel progression={progression} />
         {historyEntries.length > 0 && (
           <p className="mb-4 text-xs text-gray-500">Saved replays: {historyEntries.length}</p>
         )}
@@ -136,6 +138,26 @@ export function GameScreen({
         </footer>
       </section>
     </main>
+  );
+}
+
+function ProgressionPanel({ progression }) {
+  if (!progression) return null;
+  const { stats, unlocks } = progression;
+  return (
+    <section
+      className="mb-4 rounded-2xl border border-gray-800 bg-gray-950 p-3"
+      aria-label="Local progression"
+    >
+      <h2 className="text-sm font-bold text-gray-100">Local progression</h2>
+      <p className="mt-1 text-xs text-gray-300">
+        Games {stats.completedGames} · Wins {stats.wins} · Win rate{' '}
+        {(stats.winRate * 100).toFixed(0)}%
+      </p>
+      <p className="mt-1 text-xs text-gray-500">
+        Achievements: {unlocks.length}/10. Stored only in this browser; no account or network sync.
+      </p>
+    </section>
   );
 }
 

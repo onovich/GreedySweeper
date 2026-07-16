@@ -16,6 +16,7 @@ app -> ui -> application -> game
 - `src/game/challenge/`, `src/game/random/`, and `src/game/replay/` define versioned, serializable seeded-board, action-log, replay, and integrity contracts. Replay re-executes the engine and never re-runs AI choice.
 - `src/game/ai/` owns the versioned policy contract, public-state projection, candidates, risk estimator, utility ranking, and public-only Bank proposals. It never receives hidden mine locations as policy input.
 - `src/application/storage/` is the only browser-storage adapter boundary. Storage failures degrade to an empty local history and never enter `src/game/`.
+- `src/progression/` is a pure, replay-consuming out-of-game domain. It derives immutable facts, statistics, and achievement unlocks from verified completed replays; it never enters game state or imports UI, storage, or React.
 - `src/ui/` renders state from selectors and sends user intents. It must not calculate score, legal moves, mine counts, turns, or AI choices.
 - `src/app/` composes the controller and screen.
 

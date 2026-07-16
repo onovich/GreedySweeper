@@ -1,9 +1,13 @@
 import { useGameController } from '../application/useGameController';
 import { createBrowserHistoryStorage } from '../application/storage/history-storage';
+import { createBrowserProgressionStorage } from '../application/storage/progression-storage';
 import { GameScreen } from '../ui/screens/GameScreen';
 
 export function App() {
-  const controller = useGameController({ historyStorage: createBrowserHistoryStorage() });
+  const controller = useGameController({
+    historyStorage: createBrowserHistoryStorage(),
+    progressionStorage: createBrowserProgressionStorage(),
+  });
 
   return (
     <GameScreen
@@ -26,6 +30,7 @@ export function App() {
       isModeLocked={controller.isModeLocked}
       onModeChange={controller.setMode}
       replay={controller.replay}
+      progression={controller.progression}
     />
   );
 }

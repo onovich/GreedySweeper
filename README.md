@@ -59,4 +59,11 @@ while a wrong flag or mine explosion loses it. Select Classic v1 before the firs
 for the original rules. `GS1` codes, action logs, and replay summaries carry explicit
 rule versions, so published Classic challenges remain playable.
 
+## Local progression
+
+Completed verified challenge replays can build a local-only progression profile with win
+statistics and achievements. The profile is stored separately from replay history,
+deduplicates replay records, and can be safely discarded by browser storage; it creates
+no account, telemetry, cloud sync, currency, or gameplay advantage.
+
 GitHub Pages deployment uses the official Actions workflow and publishes the Vite build under `/GreedySweeper/`.<br/>**GitHub Pages 使用官方 Actions 工作流部署，并在 `/GreedySweeper/` 路径下发布 Vite 构建产物。**

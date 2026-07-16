@@ -25,6 +25,8 @@ import { appendActionRecord } from '../game/replay/action-log';
 import { createReplaySummary } from '../game/replay/integrity';
 import { replayGameAt } from '../game/replay/replay-engine';
 import { createHistoryEntry } from './storage/history-storage';
+import { deriveCompletedGameFacts } from '../progression/derive-game-facts';
+import { appendCompletedFacts, createProfile, getProfileStats } from '../progression/profile';
 
 function createRandomSession(
   config,
@@ -67,6 +69,7 @@ export function useGameController({
   timing = TIMING_CONFIG,
   random = Math.random,
   historyStorage = null,
+  progressionStorage = null,
   now = () => new Date(),
 } = {}) {
   const [session, setSession] = useState(() => createRandomSession(config, random));
@@ -79,6 +82,10 @@ export function useGameController({
   const [historyEntries] = useState(() => {
     const result = historyStorage?.load?.();
     return result?.ok ? result.value : [];
+  });
+  const [progressionProfile, setProgressionProfile] = useState(() => {
+    const loaded = progressionStorage?.load?.();
+    return loaded?.ok ? loaded.value : createProfile();
   });
   const stateRef = useRef(session);
   const savedHistoryRef = useRef(null);
@@ -317,6 +324,33 @@ export function useGameController({
     }
   }, [historyStorage, now, session]);
 
+  useEffect(() => {
+    if (
+      !progressionStorage ||
+      !session.descriptor ||
+      !session.gameState.gameOver ||
+      !session.actions.length
+    )
+      return;
+    const replay = {
+      descriptor: session.descriptor,
+      actions: session.actions,
+      aiPolicy: session.aiPolicy,
+    };
+    const facts = deriveCompletedGameFacts(replay, {
+      completedAt: now().toISOString(),
+      sessionSource: 'challenge',
+    });
+    if (!facts.ok) return;
+    // This is a one-time synchronization from a completed, verified replay into local storage.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setProgressionProfile((current) => {
+      const appended = appendCompletedFacts(current, facts.value);
+      if (appended.added) progressionStorage.save(appended.profile);
+      return appended.profile;
+    });
+  }, [now, progressionStorage, session]);
+
   return {
     gameState,
     isAiThinking:
@@ -337,6 +371,10 @@ export function useGameController({
     isModeLocked: session.actions.length > 0,
     setMode,
     historyEntries,
+    progression: {
+      stats: getProfileStats(progressionProfile),
+      unlocks: progressionProfile.unlocks,
+    },
     replay: {
       isAvailable: Boolean(session.descriptor && session.actions.length),
       isReplaying,
