@@ -2,7 +2,7 @@
 
 workspace: D:\WebProjects\GreedySweeper
 created_at: 2026-07-16T04:15:59.4719751+08:00
-updated_at: 2026-07-17T03:45:00+08:00
+updated_at: 2026-07-17T06:27:19.7163987+08:00
 
 planner:
   role: architect
@@ -16,19 +16,25 @@ executor:
   title: 编程执行者
   evidence: current active programming executor thread in the same workspace.
 
+domain:
+  role: domain-administrator
+  thread_id: 019f6cc7-e472-75b1-b48c-87bc0931a712
+  title: 域名管理员
+  evidence: current active onovich.com domain migration thread in the same workspace.
+
 idempotency:
-  active_goal_guide: docs/phase-5-local-progression-statistics-achievements-goal-mode-execution-guide.md
-  active_goal_phase: Phase 5 - Local progression, statistics, and achievements
-  last_planner_dispatch: 2026-07-17T03:10:00+08:00
-  last_planner_dispatch_status: sent
-  last_planner_dispatch_guide: docs/phase-5-local-progression-statistics-achievements-goal-mode-execution-guide.md
-  last_planner_dispatch_commit: cb5b913
+  active_goal_guide: docs/phase-6a-shared-core-online-protocol-foundation-goal-mode-execution-guide.md
+  active_goal_phase: Phase 6A - Shared Core and Online Protocol Foundation
+  last_planner_dispatch: pending
+  last_planner_dispatch_status: pending
+  last_planner_dispatch_guide: docs/phase-6a-shared-core-online-protocol-foundation-goal-mode-execution-guide.md
+  last_planner_dispatch_commit: pending
   last_executor_report_commit: 5e74e60
   last_executor_report_status: accepted
   last_executor_report_at: 2026-07-17T02:45:00+08:00
   last_executor_report_guide: docs/phase-5-local-progression-statistics-achievements-goal-mode-execution-guide.md
   last_check_status: pass
-  last_goalnext_trigger: blocked_pending_phase_6_user_decision
+  last_goalnext_trigger: 2026-07-17T04:30:00+08:00
   last_repair_request: 2026-07-17T03:36:00+08:00
   last_repair_request_commit: b894ac2
   last_completed_phase: Phase 5 - Local progression, statistics, and achievements
