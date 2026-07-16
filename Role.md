@@ -19,10 +19,10 @@ executor:
 idempotency:
   active_goal_guide: docs/phase-4-greed-risk-mechanics-goal-mode-execution-guide.md
   active_goal_phase: Phase 4 - Greed and push-your-luck mechanics
-  last_planner_dispatch: pending
-  last_planner_dispatch_status: pending
+  last_planner_dispatch: 2026-07-17T00:30:00+08:00
+  last_planner_dispatch_status: sent
   last_planner_dispatch_guide: docs/phase-4-greed-risk-mechanics-goal-mode-execution-guide.md
-  last_planner_dispatch_commit: pending
+  last_planner_dispatch_commit: 19e813e
   last_executor_report_commit: d8fe34c
   last_check_status: pass
   last_completed_phase: Phase 3 - AI difficulty and play styles
