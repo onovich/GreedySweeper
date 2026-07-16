@@ -47,6 +47,8 @@ Exit criteria:
 
 ### Phase 3 - AI Difficulty and Play Styles
 
+Status: implemented; awaiting phase acceptance.
+
 Status: active planning target.
 
 Player value: 提供简单、普通、困难及可感知的贪婪/保守 AI 风格。
