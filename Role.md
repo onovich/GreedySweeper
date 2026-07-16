@@ -19,10 +19,10 @@ executor:
 idempotency:
   active_goal_guide: docs/phase-3-ai-difficulty-play-styles-goal-mode-execution-guide.md
   active_goal_phase: Phase 3 - AI difficulty and play styles
-  last_planner_dispatch: pending
-  last_planner_dispatch_status: pending
+  last_planner_dispatch: 2026-07-16T20:28:00+08:00
+  last_planner_dispatch_status: sent
   last_planner_dispatch_guide: docs/phase-3-ai-difficulty-play-styles-goal-mode-execution-guide.md
-  last_planner_dispatch_commit: pending
+  last_planner_dispatch_commit: 341210b
   last_executor_report_commit: 63e10b4
   last_check_status: pass
   last_completed_phase: Phase 2 - Seeded challenges, action log, replay, and daily challenge
