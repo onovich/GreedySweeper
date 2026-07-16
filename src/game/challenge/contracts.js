@@ -12,6 +12,8 @@ export const CHALLENGE_ERROR_CODES = Object.freeze({
   unsupportedChallengeVersion: 'challenge_version_unsupported',
   invalidConfiguration: 'challenge_configuration_invalid',
   invalidSeed: 'challenge_seed_invalid',
+  invalidCode: 'challenge_code_invalid',
+  checksumMismatch: 'challenge_code_checksum_mismatch',
 });
 
 export function createChallengeDescriptor({
