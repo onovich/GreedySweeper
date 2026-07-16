@@ -28,7 +28,11 @@ verified random, imported-challenge, or daily replay.
 Privacy: local browser storage only; no account, cloud sync, telemetry, networking,
 currency, XP, or gameplay advantage.
 
-Validation: `format:check`, `lint`, 28 files / 74 tests, `ai:evaluate`,
+Controller evidence: focused controller tests complete deterministic random, imported
+challenge, and daily sessions; each records `sessionSource` as `random`, `challenge`,
+or `daily` and remains a single progression-storage submission after rerender.
+
+Validation: `format:check`, `lint`, 28 files / 77 tests, `ai:evaluate`,
 `greed:evaluate`, `progression:evaluate`, `arch:check`, `build`, and `git diff --check`
 PASS.
 

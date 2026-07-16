@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useGameController } from '../src/application/useGameController';
 import { encodeChallengeCode } from '../src/game/challenge/code';
 import { createSeededRng } from '../src/game/model/factories';
+import { createProfile } from '../src/progression/profile';
 
 const config = { rows: 2, columns: 2, totalMines: 2 };
 const timing = { aiDelayMs: 800, longPressMs: 400 };
@@ -63,5 +64,59 @@ describe('useGameController', () => {
 
     act(() => result.current.replay.exit());
     expect(result.current.replay.isReplaying).toBe(false);
+  });
+
+  it.each([
+    ['random', (controller) => controller],
+    [
+      'daily',
+      (controller) => {
+        controller.startDailyChallenge();
+        return controller;
+      },
+    ],
+    [
+      'challenge',
+      (controller) => {
+        const encoded = encodeChallengeCode({
+          rulesVersion: '1',
+          challengeVersion: '1',
+          board: { rows: 2, columns: 2, totalMines: 1 },
+          seed: '7',
+          mode: 'standard',
+        });
+        controller.startChallenge(encoded.value);
+        return controller;
+      },
+    ],
+  ])('registers a completed %s session once with its source', (_source, prepare) => {
+    const saved = [];
+    const progressionStorage = {
+      load: () => ({ ok: true, value: createProfile() }),
+      save: (profile) => {
+        saved.push(profile);
+        return { ok: true, value: profile };
+      },
+      reset: vi.fn(),
+    };
+    const { result, rerender } = renderHook(() =>
+      useGameController({
+        config: { rows: 2, columns: 2, totalMines: 1 },
+        timing,
+        random: createSeededRng([0]),
+        now: () => new Date('2026-07-17T00:00:00.000Z'),
+        progressionStorage,
+      }),
+    );
+    act(() => prepare(result.current));
+    const mine = result.current.gameState.board
+      .flatMap((row, rowIndex) => row.map((cell, column) => ({ cell, row: rowIndex, column })))
+      .find(({ cell }) => cell.isMine);
+    act(() => result.current.flag(mine.row, mine.column));
+    rerender();
+    expect(saved).toHaveLength(1);
+    expect(saved[0].facts[0].sessionSource).toBe(_source);
+    rerender();
+    expect(saved).toHaveLength(1);
   });
 });

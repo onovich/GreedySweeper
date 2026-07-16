@@ -173,7 +173,7 @@ export function useGameController({
   );
 
   const startDailyChallenge = useCallback(() => {
-    const descriptor = createDailyChallenge(now());
+    const descriptor = createDailyChallenge(now(), config);
     const nextSession = descriptor && createChallengeSession(descriptor, DEFAULT_AI_POLICY);
     if (!nextSession?.ok) return nextSession;
 
@@ -183,7 +183,7 @@ export function useGameController({
     setIsReplayPlaying(false);
     setReplayPosition(0);
     return { ok: true, value: nextSession.value.descriptor };
-  }, [now]);
+  }, [config, now]);
 
   const setAiPolicy = useCallback(
     (policy) => {
