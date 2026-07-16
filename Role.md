@@ -2,7 +2,7 @@
 
 workspace: D:\WebProjects\GreedySweeper
 created_at: 2026-07-16T04:15:59.4719751+08:00
-updated_at: 2026-07-17T06:27:19.7163987+08:00
+updated_at: 2026-07-17T06:33:00+08:00
 
 planner:
   role: architect
@@ -25,10 +25,10 @@ domain:
 idempotency:
   active_goal_guide: docs/phase-6a-shared-core-online-protocol-foundation-goal-mode-execution-guide.md
   active_goal_phase: Phase 6A - Shared Core and Online Protocol Foundation
-  last_planner_dispatch: pending
-  last_planner_dispatch_status: pending
+  last_planner_dispatch: 2026-07-17T06:33:00+08:00
+  last_planner_dispatch_status: sent
   last_planner_dispatch_guide: docs/phase-6a-shared-core-online-protocol-foundation-goal-mode-execution-guide.md
-  last_planner_dispatch_commit: pending
+  last_planner_dispatch_commit: 9c33c54
   last_executor_report_commit: 5e74e60
   last_executor_report_status: accepted
   last_executor_report_at: 2026-07-17T02:45:00+08:00
