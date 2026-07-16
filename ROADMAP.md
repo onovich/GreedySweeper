@@ -30,7 +30,7 @@ Delivered:
 
 ### Phase 2 - Seeded Challenges, Action Log, Replay, and Daily Challenge
 
-Status: implemented; awaiting phase acceptance.
+Status: accepted. Validation evidence: `docs/phase-2-validation-report.md`.
 
 Player value: 玩家可以复现同一棋盘、分享挑战码、回看完整对局，并参与无需账号的每日挑战。
 
@@ -46,6 +46,8 @@ Exit criteria:
 - 历史记录采用版本化本地存储、容量限制和安全降级。
 
 ### Phase 3 - AI Difficulty and Play Styles
+
+Status: active planning target.
 
 Player value: 提供简单、普通、困难及可感知的贪婪/保守 AI 风格。
 
