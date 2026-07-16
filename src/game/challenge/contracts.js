@@ -2,6 +2,8 @@ import { BOARD_CONFIG } from '../config/game-config';
 import {
   CHALLENGE_VERSION,
   DEFAULT_CHALLENGE_MODE,
+  GREED_CHALLENGE_MODE,
+  GREED_RULES_VERSION,
   RULES_VERSION,
 } from '../config/protocol-config';
 import { normalizeSeed, serializeSeed } from '../random/seeded-random';
@@ -43,7 +45,10 @@ export function validateChallengeDescriptor(descriptor) {
       'Challenge descriptor must be an object.',
     );
   }
-  if (descriptor.rulesVersion !== RULES_VERSION) {
+  if (
+    descriptor.rulesVersion !== RULES_VERSION &&
+    descriptor.rulesVersion !== GREED_RULES_VERSION
+  ) {
     return createProtocolError(
       CHALLENGE_ERROR_CODES.unsupportedRulesVersion,
       `Rules version ${descriptor.rulesVersion} is unsupported.`,
@@ -55,7 +60,7 @@ export function validateChallengeDescriptor(descriptor) {
       `Challenge version ${descriptor.challengeVersion} is unsupported.`,
     );
   }
-  if (!isValidBoard(descriptor.board) || descriptor.mode !== DEFAULT_CHALLENGE_MODE) {
+  if (!isValidBoard(descriptor.board) || !isRulesModePair(descriptor)) {
     return createProtocolError(
       CHALLENGE_ERROR_CODES.invalidConfiguration,
       'Challenge board configuration or mode is invalid.',
@@ -70,6 +75,13 @@ export function validateChallengeDescriptor(descriptor) {
     seed: serializeSeed(descriptor.seed),
     board: { ...descriptor.board },
   });
+}
+
+function isRulesModePair(descriptor) {
+  return (
+    (descriptor.rulesVersion === RULES_VERSION && descriptor.mode === DEFAULT_CHALLENGE_MODE) ||
+    (descriptor.rulesVersion === GREED_RULES_VERSION && descriptor.mode === GREED_CHALLENGE_MODE)
+  );
 }
 
 export function createProtocolError(code, message) {

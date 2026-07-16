@@ -51,4 +51,12 @@ Enter a `GS1` challenge code to reproduce a seeded board. Every applied human an
 
 Before the first move, choose Easy, Normal, or Hard and a Balanced, Conservative, or Greedy style. Normal + Balanced preserves the original AI behavior. AI reads only public board information; see the [Phase 3 validation report](docs/phase-3-validation-report.md).
 
+## Greed v2
+
+New ordinary games start in Greed v2. Safe reveals keep their base score and build an
+unbanked bonus pot; Bank ends the turn and cashes that pot. Correct flags cash it too,
+while a wrong flag or mine explosion loses it. Select Classic v1 before the first move
+for the original rules. `GS1` codes, action logs, and replay summaries carry explicit
+rule versions, so published Classic challenges remain playable.
+
 GitHub Pages deployment uses the official Actions workflow and publishes the Vite build under `/GreedySweeper/`.<br/>**GitHub Pages 使用官方 Actions 工作流部署，并在 `/GreedySweeper/` 路径下发布 Vite 构建产物。**

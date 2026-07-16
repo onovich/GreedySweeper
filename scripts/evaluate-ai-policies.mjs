@@ -22,6 +22,13 @@ const scenarios = [
     conservative: 'lowest public risk',
     greedy: 'highest risk at or below 0.75',
   },
+  {
+    fixture: 'greed-bank',
+    certainSafe: 'continue before Bank',
+    conservative: 'Bank at public risk >= 0.30',
+    greedy: 'Bank only with pot >= 12 and public risk >= 0.50',
+    easy: 'injected RNG gives a 25% Bank branch',
+  },
 ];
 
 for (const scenario of scenarios) {

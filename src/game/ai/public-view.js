@@ -1,5 +1,5 @@
 export function createAiPublicView(state, config) {
-  return {
+  const view = {
     rows: config.rows,
     columns: config.columns,
     totalMines: config.totalMines,
@@ -11,4 +11,8 @@ export function createAiPublicView(state, config) {
       })),
     ),
   };
+  if (state.rulesVersion === '2' && state.greed) {
+    view.greed = { streak: state.greed.streak, bonusPot: state.greed.bonusPot };
+  }
+  return view;
 }

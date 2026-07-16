@@ -12,6 +12,7 @@ export function GameScreen({
   isAiThinking,
   onReveal,
   onFlag,
+  onBank,
   onRestart,
   onStartChallenge,
   onStartDailyChallenge,
@@ -22,6 +23,9 @@ export function GameScreen({
   aiPolicy,
   isAiPolicyLocked,
   onAiPolicyChange,
+  mode,
+  isModeLocked,
+  onModeChange,
   replay = {},
 }) {
   const isHumanTurn =
@@ -59,6 +63,7 @@ export function GameScreen({
         </section>
 
         <AiPolicyPanel policy={aiPolicy} isLocked={isAiPolicyLocked} onChange={onAiPolicyChange} />
+        <ModePanel mode={mode} isLocked={isModeLocked} onChange={onModeChange} />
 
         {isAiThinking && (
           <p
@@ -75,6 +80,25 @@ export function GameScreen({
           onReveal={onReveal}
           onFlag={onFlag}
         />
+
+        {gameState.greed && (
+          <section
+            className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-900/60 bg-amber-950/30 p-3"
+            aria-label="Greed reward status"
+          >
+            <p className="text-sm text-amber-100">
+              Greed: streak {gameState.greed.streak}, unbanked pot {gameState.greed.bonusPot}
+            </p>
+            <button
+              type="button"
+              onClick={onBank}
+              disabled={!isHumanTurn || gameState.greed.streak < 1}
+              className="rounded-lg border border-amber-500/60 px-3 py-2 text-sm font-bold text-amber-100 disabled:cursor-not-allowed disabled:opacity-50 hover:bg-amber-900/40"
+            >
+              Bank rewards and end turn
+            </button>
+          </section>
+        )}
 
         {gameState.gameOver && <GameOverBanner gameState={gameState} />}
 
@@ -112,6 +136,32 @@ export function GameScreen({
         </footer>
       </section>
     </main>
+  );
+}
+
+function ModePanel({ mode, isLocked, onChange }) {
+  return (
+    <section
+      className="mb-4 rounded-2xl border border-gray-800 bg-gray-950 p-3"
+      aria-label="Game mode selector"
+    >
+      <label htmlFor="game-mode" className="mr-2 text-xs text-gray-300">
+        Game mode
+      </label>
+      <select
+        id="game-mode"
+        value={mode}
+        disabled={isLocked}
+        onChange={(event) => onChange?.(event.target.value)}
+        className="rounded-lg border border-gray-700 bg-gray-900 px-2 py-1 text-sm text-gray-100 disabled:opacity-60"
+      >
+        <option value="greed">Greed v2 (default)</option>
+        <option value="standard">Classic v1</option>
+      </select>
+      <span className="ml-2 text-xs text-gray-500">
+        {isLocked ? 'Locked for this game.' : 'Choose before the first move.'}
+      </span>
+    </section>
   );
 }
 

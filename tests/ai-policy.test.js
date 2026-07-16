@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { selectAiAction } from '../src/game/ai/select-action';
 import { ACTION_TYPES, PLAYERS } from '../src/game/model/contracts';
-import { createCell, createInitialState } from '../src/game/model/factories';
+import {
+  createCell,
+  createGreedInitialState,
+  createInitialState,
+} from '../src/game/model/factories';
 
 const config = { rows: 2, columns: 2, totalMines: 1 };
 
@@ -114,5 +118,19 @@ describe('AI policy', () => {
     expect(selectAiAction(first, config, () => 0, hard)).toEqual(
       selectAiAction(second, config, () => 0, hard),
     );
+  });
+
+  it('banks a public Greed pot for a conservative AI when risk is high', () => {
+    const state = createGreedInitialState([
+      [{ ...createCell({ neighborMines: 1 }), isRevealed: true }, createCell()],
+      [createCell(), createCell()],
+    ]);
+    state.greed = { streak: 2, bonusPot: 4 };
+    const policy = { aiPolicyVersion: '1', difficulty: 'hard', style: 'conservative' };
+
+    expect(selectAiAction(state, config, () => 0, policy)).toEqual({
+      type: ACTION_TYPES.bank,
+      player: PLAYERS.ai,
+    });
   });
 });

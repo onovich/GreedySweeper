@@ -1,7 +1,11 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { GameScreen } from '../src/ui/screens/GameScreen';
-import { createCell, createInitialState } from '../src/game/model/factories';
+import {
+  createCell,
+  createGreedInitialState,
+  createInitialState,
+} from '../src/game/model/factories';
 
 describe('GameScreen', () => {
   afterEach(() => cleanup());
@@ -45,5 +49,25 @@ describe('GameScreen', () => {
     expect(screen.getByLabelText('Challenge code')).toBeTruthy();
     expect(screen.getByLabelText('AI difficulty')).toBeTruthy();
     expect(screen.getByText('刺激计分规则')).toBeTruthy();
+  });
+
+  it('renders a keyboard-accessible Bank control for Greed v2', () => {
+    const state = createGreedInitialState([[createCell({ neighborMines: 1 })]]);
+    state.greed = { streak: 1, bonusPot: 3 };
+    render(
+      <GameScreen
+        gameState={state}
+        isAiThinking={false}
+        onReveal={vi.fn()}
+        onFlag={vi.fn()}
+        onBank={vi.fn()}
+        onRestart={vi.fn()}
+        mode="greed"
+        onModeChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: 'Bank rewards and end turn' })).toBeTruthy();
+    expect(screen.getByLabelText('Game mode')).toBeTruthy();
   });
 });

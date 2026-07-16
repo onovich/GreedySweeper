@@ -64,7 +64,7 @@ Exit criteria:
 
 ### Phase 4 - Greed and Push-Your-Luck Mechanics
 
-Status: active planning target.
+Status: implemented; awaiting phase acceptance. Validation evidence: `docs/phase-4-validation-report.md`.
 
 Player value: 强化“贪婪扫雷”的辨识度，让继续行动、主动收手和风险收益成为明确决策。
 

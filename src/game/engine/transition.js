@@ -9,8 +9,26 @@ import {
 import { cloneBoard } from './board';
 import { isCoordinateInBounds } from './coordinates';
 import { revealFlood } from './flood-reveal';
+import { applyGreedAction } from './rules/greed-v2';
+import { isGreedRules } from './rules/registry';
 
-export function applyAction(state, action, config = BOARD_CONFIG, scoreConfig = SCORE_CONFIG) {
+export function applyAction(
+  state,
+  action,
+  config = BOARD_CONFIG,
+  scoreConfig = SCORE_CONFIG,
+  rules = state?.rulesVersion ? { rulesVersion: state.rulesVersion, mode: state.mode } : null,
+) {
+  if (isGreedRules(rules)) return applyGreedAction(state, action, config, scoreConfig);
+  return applyClassicAction(state, action, config, scoreConfig);
+}
+
+export function applyClassicAction(
+  state,
+  action,
+  config = BOARD_CONFIG,
+  scoreConfig = SCORE_CONFIG,
+) {
   if (
     state.gameOver ||
     !isGameAction(action) ||

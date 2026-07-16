@@ -1,5 +1,9 @@
 import { BOARD_CONFIG } from '../config/game-config';
-import { DAILY_CHALLENGE_NAMESPACE } from '../config/protocol-config';
+import {
+  GREED_CHALLENGE_MODE,
+  GREED_DAILY_CHALLENGE_NAMESPACE,
+  GREED_RULES_VERSION,
+} from '../config/protocol-config';
 import { createChallengeDescriptor } from './contracts';
 
 export function createDailyChallenge(date = new Date(), board = BOARD_CONFIG) {
@@ -7,8 +11,10 @@ export function createDailyChallenge(date = new Date(), board = BOARD_CONFIG) {
   if (day === null) return null;
 
   return createChallengeDescriptor({
-    seed: hashSeed(`${DAILY_CHALLENGE_NAMESPACE}:${day}`),
+    seed: hashSeed(`${GREED_DAILY_CHALLENGE_NAMESPACE}:${day}`),
     board,
+    mode: GREED_CHALLENGE_MODE,
+    rulesVersion: GREED_RULES_VERSION,
   });
 }
 

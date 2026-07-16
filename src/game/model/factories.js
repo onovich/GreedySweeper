@@ -24,6 +24,15 @@ export function createInitialState(board = []) {
   };
 }
 
+export function createGreedInitialState(board = []) {
+  return {
+    ...createInitialState(board),
+    rulesVersion: '2',
+    mode: 'greed',
+    greed: { streak: 0, bonusPot: 0 },
+  };
+}
+
 export function createSeededRng(sequence) {
   let index = 0;
   return () => {

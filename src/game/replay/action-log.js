@@ -1,8 +1,12 @@
-import { ACTION_RECORD_VERSION } from '../config/protocol-config';
 import { isGameAction } from '../model/contracts';
-import { REPLAY_ERROR_CODES, createActionRecord, isActionRecord } from './contracts';
+import {
+  REPLAY_ERROR_CODES,
+  createActionRecord,
+  getActionRecordVersion,
+  isActionRecord,
+} from './contracts';
 
-export function appendActionRecord(actionLog, action) {
+export function appendActionRecord(actionLog, action, rules = null) {
   const validation = validateActionLog(actionLog);
   if (!validation.ok) return validation;
 
@@ -10,10 +14,9 @@ export function appendActionRecord(actionLog, action) {
     return createReplayFailure(REPLAY_ERROR_CODES.invalidActionRecord);
   }
 
-  return createReplaySuccess([
-    ...validation.value,
-    createActionRecord(validation.value.length, action),
-  ]);
+  const record = createActionRecord(validation.value.length, action, getActionRecordVersion(rules));
+  if (!isActionRecord(record)) return createReplayFailure(REPLAY_ERROR_CODES.invalidActionRecord);
+  return createReplaySuccess([...validation.value, record]);
 }
 
 export function validateActionLog(actionLog) {
@@ -23,17 +26,13 @@ export function validateActionLog(actionLog) {
 
   for (let sequence = 0; sequence < actionLog.length; sequence += 1) {
     const record = actionLog[sequence];
-    if (
-      !isActionRecord(record) ||
-      record.version !== ACTION_RECORD_VERSION ||
-      record.sequence !== sequence
-    ) {
+    if (!isActionRecord(record) || record.sequence !== sequence) {
       return createReplayFailure(REPLAY_ERROR_CODES.invalidActionLog);
     }
   }
 
   return createReplaySuccess(
-    actionLog.map((record) => createActionRecord(record.sequence, record.action)),
+    actionLog.map((record) => createActionRecord(record.sequence, record.action, record.version)),
   );
 }
 

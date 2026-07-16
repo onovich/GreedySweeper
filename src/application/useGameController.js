@@ -10,23 +10,33 @@ import { createChallengeBoard } from '../game/challenge/board';
 import { decodeChallengeCode } from '../game/challenge/code';
 import { createDailyChallenge } from '../game/challenge/daily';
 import { BOARD_CONFIG, SCORE_CONFIG, TIMING_CONFIG } from '../game/config/game-config';
+import { DEFAULT_NEW_GAME_MODE, GREED_CHALLENGE_MODE } from '../game/config/protocol-config';
 import { createBoard } from '../game/engine/board';
 import { applyAction } from '../game/engine/transition';
 import {
   PLAYERS,
   RESULT_TYPES,
+  createBankAction,
   createFlagAction,
   createRevealAction,
 } from '../game/model/contracts';
-import { createInitialState } from '../game/model/factories';
+import { createGreedInitialState, createInitialState } from '../game/model/factories';
 import { appendActionRecord } from '../game/replay/action-log';
 import { createReplaySummary } from '../game/replay/integrity';
 import { replayGameAt } from '../game/replay/replay-engine';
 import { createHistoryEntry } from './storage/history-storage';
 
-function createRandomSession(config, random, aiPolicy = DEFAULT_AI_POLICY) {
+function createRandomSession(
+  config,
+  random,
+  aiPolicy = DEFAULT_AI_POLICY,
+  mode = DEFAULT_NEW_GAME_MODE,
+) {
   return {
-    gameState: createInitialState(createBoard(config, random)),
+    gameState:
+      mode === GREED_CHALLENGE_MODE
+        ? createGreedInitialState(createBoard(config, random))
+        : createInitialState(createBoard(config, random)),
     descriptor: null,
     actions: [],
     aiPolicy,
@@ -40,7 +50,10 @@ function createChallengeSession(descriptor, aiPolicy = DEFAULT_AI_POLICY) {
   return {
     ok: true,
     value: {
-      gameState: createInitialState(boardResult.value.board),
+      gameState:
+        descriptor.rulesVersion === '2'
+          ? createGreedInitialState(boardResult.value.board)
+          : createInitialState(boardResult.value.board),
       descriptor: boardResult.value.descriptor,
       actions: [],
       aiPolicy,
@@ -58,6 +71,7 @@ export function useGameController({
 } = {}) {
   const [session, setSession] = useState(() => createRandomSession(config, random));
   const [pendingAiPolicy, setPendingAiPolicy] = useState(DEFAULT_AI_POLICY);
+  const [pendingMode, setPendingMode] = useState(DEFAULT_NEW_GAME_MODE);
   const [challengeError, setChallengeError] = useState(null);
   const [isReplaying, setIsReplaying] = useState(false);
   const [isReplayPlaying, setIsReplayPlaying] = useState(false);
@@ -88,10 +102,14 @@ export function useGameController({
 
       setSession((current) => {
         const activeConfig = current.descriptor?.board ?? config;
-        const transition = applyAction(current.gameState, action, activeConfig, scoreConfig);
+        const rules = current.descriptor ?? {
+          rulesVersion: current.gameState.rulesVersion ?? '1',
+          mode: current.gameState.mode ?? 'standard',
+        };
+        const transition = applyAction(current.gameState, action, activeConfig, scoreConfig, rules);
         if (transition.result.type !== RESULT_TYPES.applied) return current;
 
-        const appended = appendActionRecord(current.actions, action);
+        const appended = appendActionRecord(current.actions, action, rules);
         return appended.ok
           ? { ...current, gameState: transition.state, actions: appended.value }
           : { ...current, gameState: transition.state };
@@ -110,6 +128,8 @@ export function useGameController({
     [dispatch],
   );
 
+  const bank = useCallback(() => dispatch(createBankAction(PLAYERS.human)), [dispatch]);
+
   const restart = useCallback(() => {
     setIsReplaying(false);
     setIsReplayPlaying(false);
@@ -118,9 +138,9 @@ export function useGameController({
     setSession((current) => {
       if (current.descriptor)
         return createChallengeSession(current.descriptor, pendingAiPolicy).value;
-      return createRandomSession(config, random, pendingAiPolicy);
+      return createRandomSession(config, random, pendingAiPolicy, pendingMode);
     });
-  }, [config, pendingAiPolicy, random]);
+  }, [config, pendingAiPolicy, pendingMode, random]);
 
   const startChallenge = useCallback(
     (code) => {
@@ -172,6 +192,18 @@ export function useGameController({
     [session.actions.length],
   );
 
+  const setMode = useCallback(
+    (mode) => {
+      if (session.actions.length > 0 || !['standard', GREED_CHALLENGE_MODE].includes(mode)) {
+        return { ok: false, error: { code: 'game_mode_locked' } };
+      }
+      setPendingMode(mode);
+      setSession((current) => createRandomSession(config, random, current.aiPolicy, mode));
+      return { ok: true, value: mode };
+    },
+    [config, random, session.actions.length],
+  );
+
   const startReplay = useCallback(() => {
     if (!session.descriptor || session.actions.length === 0) return;
     setReplayPosition(0);
@@ -219,9 +251,13 @@ export function useGameController({
         const action = selectAiAction(current.gameState, activeConfig, random, current.aiPolicy);
         if (!action) return current;
 
-        const transition = applyAction(current.gameState, action, activeConfig, scoreConfig);
+        const rules = current.descriptor ?? {
+          rulesVersion: current.gameState.rulesVersion ?? '1',
+          mode: current.gameState.mode ?? 'standard',
+        };
+        const transition = applyAction(current.gameState, action, activeConfig, scoreConfig, rules);
         if (transition.result.type !== RESULT_TYPES.applied) return current;
-        const appended = appendActionRecord(current.actions, action);
+        const appended = appendActionRecord(current.actions, action, rules);
         return appended.ok
           ? { ...current, gameState: transition.state, actions: appended.value }
           : { ...current, gameState: transition.state };
@@ -287,6 +323,7 @@ export function useGameController({
       !isReplaying && !session.gameState.gameOver && session.gameState.currentPlayer === PLAYERS.ai,
     reveal,
     flag,
+    bank,
     restart,
     startChallenge,
     startDailyChallenge,
@@ -296,6 +333,9 @@ export function useGameController({
     aiPolicy: session.aiPolicy,
     isAiPolicyLocked: session.actions.length > 0,
     setAiPolicy,
+    mode: session.gameState.mode ?? 'standard',
+    isModeLocked: session.actions.length > 0,
+    setMode,
     historyEntries,
     replay: {
       isAvailable: Boolean(session.descriptor && session.actions.length),

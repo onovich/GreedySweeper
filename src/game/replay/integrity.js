@@ -1,4 +1,4 @@
-import { REPLAY_VERSION } from '../config/protocol-config';
+import { GREED_REPLAY_VERSION, REPLAY_VERSION } from '../config/protocol-config';
 import { REPLAY_ERROR_CODES } from './contracts';
 import { replayGame } from './replay-engine';
 
@@ -15,8 +15,9 @@ export function createReplaySummary({ descriptor, state, actionCount }) {
     finalState: serializeState(state),
   };
 
+  const replayVersion = descriptor.rulesVersion === '2' ? GREED_REPLAY_VERSION : REPLAY_VERSION;
   return {
-    replayVersion: REPLAY_VERSION,
+    replayVersion,
     actionCount,
     hash: hashText(stableStringify(payload)),
   };
@@ -38,7 +39,7 @@ export function validateReplayIntegrity(replay) {
   }
 
   if (
-    expectedSummary.replayVersion !== REPLAY_VERSION ||
+    expectedSummary.replayVersion !== actualSummary.replayVersion ||
     !Number.isInteger(expectedSummary.actionCount) ||
     typeof expectedSummary.hash !== 'string'
   ) {
@@ -60,7 +61,7 @@ export function validateReplayIntegrity(replay) {
 }
 
 function serializeState(state) {
-  return {
+  const serialized = {
     humanScore: state.humanScore,
     aiScore: state.aiScore,
     minesFound: state.minesFound,
@@ -77,6 +78,12 @@ function serializeState(state) {
       ]),
     ),
   };
+  if (state.rulesVersion === '2') {
+    serialized.rulesVersion = state.rulesVersion;
+    serialized.mode = state.mode;
+    serialized.greed = { ...state.greed };
+  }
+  return serialized;
 }
 
 function stableStringify(value) {

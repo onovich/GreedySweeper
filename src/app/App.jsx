@@ -11,6 +11,7 @@ export function App() {
       isAiThinking={controller.isAiThinking}
       onReveal={controller.reveal}
       onFlag={controller.flag}
+      onBank={controller.bank}
       onRestart={controller.restart}
       onStartChallenge={controller.startChallenge}
       onStartDailyChallenge={controller.startDailyChallenge}
@@ -21,6 +22,9 @@ export function App() {
       aiPolicy={controller.aiPolicy}
       isAiPolicyLocked={controller.isAiPolicyLocked}
       onAiPolicyChange={controller.setAiPolicy}
+      mode={controller.mode}
+      isModeLocked={controller.isModeLocked}
+      onModeChange={controller.setMode}
       replay={controller.replay}
     />
   );
