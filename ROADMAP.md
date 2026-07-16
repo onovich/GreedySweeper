@@ -47,8 +47,6 @@ Exit criteria:
 
 ### Phase 3 - AI Difficulty and Play Styles
 
-Status: implemented; awaiting phase acceptance.
-
 Status: accepted. Validation evidence: `docs/phase-3-validation-report.md`.
 
 Player value: 提供简单、普通、困难及可感知的贪婪/保守 AI 风格。
@@ -64,7 +62,7 @@ Exit criteria:
 
 ### Phase 4 - Greed and Push-Your-Luck Mechanics
 
-Status: implemented; awaiting phase acceptance. Validation evidence: `docs/phase-4-validation-report.md`.
+Status: accepted. Validation evidence: `docs/phase-4-validation-report.md`.
 
 Player value: 强化“贪婪扫雷”的辨识度，让继续行动、主动收手和风险收益成为明确决策。
 
@@ -84,6 +82,8 @@ Exit criteria:
 - 不破坏旧挑战码、动作日志和回放的版本边界。
 
 ### Phase 5 - Local Progression, Statistics, and Achievements
+
+Status: active planning target.
 
 Player value: 提供长期目标、个人纪录、难度战绩和成就反馈。
 
