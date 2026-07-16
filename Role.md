@@ -24,6 +24,9 @@ idempotency:
   last_planner_dispatch_guide: docs/phase-4-greed-risk-mechanics-goal-mode-execution-guide.md
   last_planner_dispatch_commit: 19e813e
   last_executor_report_commit: d8fe34c
+  last_executor_report_status: ready_for_check
+  last_executor_report_at: 2026-07-17T02:45:00+08:00
+  last_executor_report_guide: docs/phase-4-greed-risk-mechanics-goal-mode-execution-guide.md
   last_check_status: pass
   last_completed_phase: Phase 3 - AI difficulty and play styles
   last_completed_validation: format:check, lint, 61 tests, arch:check, build PASS

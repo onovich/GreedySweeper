@@ -37,7 +37,7 @@ The pure, serializable game engine is isolated from React, browser events, timer
 
 ## Roadmap
 
-Phase completion evidence: [Phase 2 validation report](docs/phase-2-validation-report.md).
+Phase completion evidence: [Phase 2 validation report](docs/phase-2-validation-report.md), [Phase 3 validation report](docs/phase-3-validation-report.md), and [Phase 4 validation report](docs/phase-4-validation-report.md).
 
 Development proceeds in small playable phases, with architecture and validation gates before each phase advances. See [ROADMAP.md](ROADMAP.md).<br/>**项目按可玩的敏捷小阶段推进，每个阶段都必须通过架构与质量门禁。详见 [ROADMAP.md](ROADMAP.md)。**
 
