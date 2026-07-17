@@ -97,4 +97,48 @@ describe('room worker foundation', () => {
     expect(outcome.duplicate.accepted.commandId).toBe('command-1');
     expect(outcome.stale).toEqual({ error: 'online_stale_sequence' });
   });
+
+  for (const ruleset of ['classic-v1', 'greed-v2']) {
+    it(`finishes a ${ruleset} match through the shared authoritative command path`, async () => {
+      const created = await SELF.fetch('https://worker.test/v1/rooms', {
+        method: 'POST',
+        body: JSON.stringify({ ruleset }),
+      });
+      const room = await created.json();
+      await SELF.fetch(`https://worker.test/v1/rooms/${room.roomCode}/join`, {
+        method: 'POST',
+        body: JSON.stringify({ rulesetAccepted: true }),
+      });
+      const stub = env.ROOM.get(env.ROOM.idFromName(room.roomCode));
+      const result = await runInDurableObject(stub, async (instance, state) => {
+        let sequence = 0;
+        while (true) {
+          const row = Array.from(
+            state.storage.sql.exec('SELECT state_json FROM room_authority WHERE id = 1'),
+          )[0];
+          const game = JSON.parse(row.state_json);
+          if (game.gameOver) return game;
+          const mine = game.board
+            .flatMap((cells, rowIndex) =>
+              cells.map((cell, column) => ({ ...cell, row: rowIndex, column })),
+            )
+            .find((cell) => cell.isMine && !cell.isRevealed);
+          const seat = game.currentPlayer === 'human' ? 'creator' : 'invitee';
+          const outcome = await instance.acceptCommand(seat, {
+            commandId: `${ruleset}-${sequence}`,
+            sequence,
+            action: {
+              type: 'flag',
+              row: mine.row,
+              column: mine.column,
+              player: game.currentPlayer,
+            },
+          });
+          if (outcome.error) throw new Error(outcome.error);
+          sequence += 1;
+        }
+      });
+      expect(result.gameOver).toBe(true);
+    });
+  }
 });
