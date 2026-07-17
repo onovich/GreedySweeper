@@ -18,6 +18,7 @@ const ROOM_ALPHABET = 'ABCDEFGHJKMNPQRSTVWXYZ23456789';
 export class RoomDurableObject {
   constructor(state) {
     this.state = state;
+    this.sockets = new Set();
   }
 
   initialize() {
@@ -65,9 +66,6 @@ export class RoomDurableObject {
     )[0];
     const match = Array.from(
       this.state.storage.sql.exec('SELECT opening_player, commitment FROM room_match WHERE id = 1'),
-    )[0];
-    const authority = Array.from(
-      this.state.storage.sql.exec('SELECT sequence, state_json FROM room_authority WHERE id = 1'),
     )[0];
     return room
       ? json({
@@ -153,6 +151,9 @@ export class RoomDurableObject {
     const match = Array.from(
       this.state.storage.sql.exec('SELECT opening_player, commitment FROM room_match WHERE id = 1'),
     )[0];
+    const authority = Array.from(
+      this.state.storage.sql.exec('SELECT sequence, state_json FROM room_authority WHERE id = 1'),
+    )[0];
     const seat =
       digestValue === room?.creator_digest
         ? 'creator'
@@ -161,6 +162,8 @@ export class RoomDurableObject {
           : null;
     if (!seat) return closeProtocol(socket, 'online_unauthorized_seat');
     socket.serializeAttachment({ seat });
+    this.sockets.add(socket);
+    socket.addEventListener('close', () => this.sockets.delete(socket));
     socket.send(JSON.stringify(envelope('authenticated', { seat })));
     socket.send(
       JSON.stringify(
@@ -200,12 +203,11 @@ export class RoomDurableObject {
           }),
         ),
       );
-    socket.send(JSON.stringify(envelope('command_accepted', result.accepted)));
-    socket.send(
-      JSON.stringify(
-        envelope('snapshot', { snapshot: projectState(result.state, result.sequence) }),
-      ),
+    const snapshot = JSON.stringify(
+      envelope('snapshot', { snapshot: projectState(result.state, result.sequence) }),
     );
+    for (const peer of this.sockets) peer.send(snapshot);
+    socket.send(JSON.stringify(envelope('command_accepted', result.accepted)));
   }
 
   async acceptCommand(seat, command) {
