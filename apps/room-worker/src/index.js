@@ -4,6 +4,13 @@ import {
   validateRoomCreateRequest,
   validateRoomJoinRequest,
 } from '@greedy-sweeper/online-protocol';
+import { BOARD_CONFIG } from '@greedy-sweeper/game-core/config/game-config';
+import { createChallengeBoard } from '@greedy-sweeper/game-core/challenge/board';
+import { createChallengeDescriptor } from '@greedy-sweeper/game-core/challenge/contracts';
+import {
+  createGreedInitialState,
+  createInitialState,
+} from '@greedy-sweeper/game-core/model/factories';
 
 const ROOM_ALPHABET = 'ABCDEFGHJKMNPQRSTVWXYZ23456789';
 
@@ -18,6 +25,9 @@ export class RoomDurableObject {
     );
     this.state.storage.sql.exec(
       'CREATE TABLE IF NOT EXISTS room_match (id INTEGER PRIMARY KEY, opening_player TEXT NOT NULL, commitment TEXT NOT NULL)',
+    );
+    this.state.storage.sql.exec(
+      'CREATE TABLE IF NOT EXISTS room_authority (id INTEGER PRIMARY KEY, sequence INTEGER NOT NULL, descriptor_json TEXT NOT NULL, state_json TEXT NOT NULL, commands_json TEXT NOT NULL)',
     );
   }
 
@@ -72,7 +82,7 @@ export class RoomDurableObject {
     )[0];
     if (!room) return json({ error: { code: 'online_room_not_found' } }, 404);
     if (room.invitee_digest) return json({ error: { code: 'online_room_full' } }, 409);
-    const seed = createSecret();
+    const seed = crypto.getRandomValues(new Uint32Array(1))[0];
     const salt = createSecret();
     const openingPlayer = crypto.getRandomValues(new Uint8Array(1))[0] % 2 ? 'creator' : 'invitee';
     const commitment = await digest(
@@ -86,6 +96,21 @@ export class RoomDurableObject {
       'INSERT INTO room_match (id, opening_player, commitment) VALUES (1, ?, ?)',
       openingPlayer,
       commitment,
+    );
+    const descriptor = createChallengeDescriptor({
+      seed,
+      board: BOARD_CONFIG,
+      rulesVersion: room.ruleset === 'greed-v2' ? '2' : '1',
+      mode: room.ruleset === 'greed-v2' ? 'greed' : 'standard',
+    });
+    const board = createChallengeBoard(descriptor).value.board;
+    const state =
+      room.ruleset === 'greed-v2' ? createGreedInitialState(board) : createInitialState(board);
+    this.state.storage.sql.exec(
+      'INSERT INTO room_authority (id, sequence, descriptor_json, state_json, commands_json) VALUES (1, 0, ?, ?, ?)',
+      JSON.stringify(descriptor),
+      JSON.stringify(state),
+      '[]',
     );
     await this.state.storage.put('terminal-proof', { seed, salt });
     return json({ ruleset: room.ruleset, lifecycle: 'active', openingPlayer, commitment });
