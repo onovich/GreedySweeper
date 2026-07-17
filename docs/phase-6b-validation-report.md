@@ -50,7 +50,7 @@ git diff --check
 
 ## Commits and remote
 
-Implementation trail: `774aac7` boundary contract; `f07119a` protocol; `9beb5ab` room schema; `1e6d4ac` setup metadata; `e74f719` seat authentication; `fc12db1` authority initialization; `44782da` ordered commands; `c1a60c2` idempotency tests; `b80624c` room setup UI; `9ad42b2` synchronization; `13d53d4` online board; `a703dbe` authenticated projection repair; `cee4a7b` broadcasts; `5237fc9` terminal proof; `2655b26` Classic/Greed completion; `ce71b7a` architecture repair; `036d1cb` Preview prerequisite; and the final closure commit below.
+Implementation trail: `774aac7` boundary contract; `f07119a` protocol; `9beb5ab` room schema; `1e6d4ac` setup metadata; `e74f719` seat authentication; `fc12db1` authority initialization; `44782da` ordered commands; `c1a60c2` idempotency tests; `b80624c` room setup UI; `9ad42b2` synchronization; `13d53d4` online board; `a703dbe` authenticated projection repair; `cee4a7b` broadcasts; `5237fc9` terminal proof; `2655b26` Classic/Greed completion; `ce71b7a` architecture repair; `036d1cb` Preview prerequisite; and `fc4bf34` two-client coverage, Preview configuration, CI, and report closure.
 
 Remote: final closure pushed to `origin/main`.
 
