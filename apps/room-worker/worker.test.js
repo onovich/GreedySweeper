@@ -1,4 +1,4 @@
-import { SELF, env, evictDurableObject, reset } from 'cloudflare:test';
+import { SELF, env, evictDurableObject, reset, runInDurableObject } from 'cloudflare:test';
 import { afterEach, describe, expect, it } from 'vitest';
 
 afterEach(async () => reset());
@@ -56,5 +56,45 @@ describe('room worker foundation', () => {
       openingPlayer: invitee.openingPlayer,
       commitment: invitee.commitment,
     });
+  });
+
+  it('persists an accepted command once and rejects its stale retry without a second transition', async () => {
+    const created = await SELF.fetch('https://worker.test/v1/rooms', {
+      method: 'POST',
+      body: JSON.stringify({ ruleset: 'classic-v1' }),
+    });
+    const room = await created.json();
+    await SELF.fetch(`https://worker.test/v1/rooms/${room.roomCode}/join`, {
+      method: 'POST',
+      body: JSON.stringify({ rulesetAccepted: true }),
+    });
+    const stub = env.ROOM.get(env.ROOM.idFromName(room.roomCode));
+    const outcome = await runInDurableObject(stub, async (instance, state) => {
+      const row = Array.from(
+        state.storage.sql.exec('SELECT state_json FROM room_authority WHERE id = 1'),
+      )[0];
+      const gameState = JSON.parse(row.state_json);
+      const seat = gameState.currentPlayer === 'human' ? 'creator' : 'invitee';
+      const player = gameState.currentPlayer;
+      const first = await instance.acceptCommand(seat, {
+        commandId: 'command-1',
+        sequence: 0,
+        action: { type: 'reveal', row: 0, column: 0, player },
+      });
+      const duplicate = await instance.acceptCommand(seat, {
+        commandId: 'command-1',
+        sequence: 0,
+        action: { type: 'reveal', row: 0, column: 0, player },
+      });
+      const stale = await instance.acceptCommand(seat, {
+        commandId: 'command-2',
+        sequence: 0,
+        action: { type: 'reveal', row: 0, column: 1, player },
+      });
+      return { first, duplicate, stale };
+    });
+    expect(outcome.first.accepted.commandId).toBe('command-1');
+    expect(outcome.duplicate.accepted.commandId).toBe('command-1');
+    expect(outcome.stale).toEqual({ error: 'online_stale_sequence' });
   });
 });

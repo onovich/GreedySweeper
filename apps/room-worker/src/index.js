@@ -107,6 +107,7 @@ export class RoomDurableObject {
     const board = createChallengeBoard(descriptor).value.board;
     const state =
       room.ruleset === 'greed-v2' ? createGreedInitialState(board) : createInitialState(board);
+    state.currentPlayer = openingPlayer === 'creator' ? 'human' : 'ai';
     this.state.storage.sql.exec(
       'INSERT INTO room_authority (id, sequence, descriptor_json, state_json, commands_json) VALUES (1, 0, ?, ?, ?)',
       JSON.stringify(descriptor),
