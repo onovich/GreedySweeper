@@ -2,22 +2,25 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
-const gameRoot = join(root, 'src', 'game');
-const applicationRoot = join(root, 'src', 'application');
+const gameRoot = join(root, 'apps', 'web', 'src', 'game');
+const applicationRoot = join(root, 'apps', 'web', 'src', 'application');
 const requiredBoundaries = [
-  'src/app/App.jsx',
-  'src/application',
-  'src/game/config',
-  'src/game/model',
-  'src/game/engine',
-  'src/game/ai',
-  'src/game/challenge',
-  'src/game/random',
-  'src/game/replay',
-  'src/application/storage',
-  'src/game/selectors',
-  'src/ui/components',
-  'src/ui/screens',
+  'apps/web/src/app/App.jsx',
+  'apps/web/src/application',
+  'apps/web/src/game/config',
+  'apps/web/src/game/model',
+  'apps/web/src/game/engine',
+  'apps/web/src/game/ai',
+  'apps/web/src/game/challenge',
+  'apps/web/src/game/random',
+  'apps/web/src/game/replay',
+  'apps/web/src/application/storage',
+  'apps/web/src/game/selectors',
+  'apps/web/src/ui/components',
+  'apps/web/src/ui/screens',
+  'packages/game-core',
+  'packages/online-protocol',
+  'apps/room-worker',
 ];
 const forbiddenPatterns = [
   { pattern: /from\s+['"]react(?:\/[^'"]*)?['"]/, description: 'React import' },

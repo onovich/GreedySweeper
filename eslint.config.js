@@ -4,7 +4,7 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import globals from 'globals';
 
 export default [
-  { ignores: ['dist', 'node_modules', 'origin'] },
+  { ignores: ['dist', 'apps/web/dist', 'node_modules', 'origin'] },
   js.configs.recommended,
   {
     files: ['scripts/**/*.mjs'],

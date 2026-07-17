@@ -1,0 +1,6 @@
+{
+  "name": "@greedy-sweeper/game-core",
+  "private": true,
+  "type": "module",
+  "exports": "./index.js"
+}

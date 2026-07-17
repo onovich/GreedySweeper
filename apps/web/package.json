@@ -1,0 +1,8 @@
+{
+  "name": "@greedy-sweeper/web",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@greedy-sweeper/game-core": "*"
+  }
+}
