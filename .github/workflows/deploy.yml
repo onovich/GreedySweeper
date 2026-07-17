@@ -40,6 +40,7 @@ jobs:
           npm run protocol:evaluate
           npm run online:evaluate
           npm run worker:test
+          npm run online:e2e
           npm run worker:dry-run
           npm run workspace:check
           npm run arch:check

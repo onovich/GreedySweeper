@@ -125,7 +125,9 @@ export class RoomDurableObject {
     const pair = new WebSocketPair();
     const [client, server] = Object.values(pair);
     server.accept();
-    server.addEventListener('message', (event) => this.handleSocketMessage(server, event));
+    server.addEventListener('message', (event) => {
+      void this.handleSocketMessage(server, event);
+    });
     return new Response(null, { status: 101, webSocket: client });
   }
 

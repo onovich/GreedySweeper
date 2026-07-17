@@ -10,6 +10,6 @@ export default defineConfig({
   ],
   test: {
     pool: '@cloudflare/vitest-pool-workers',
-    include: ['apps/room-worker/worker.test.js'],
+    include: ['apps/room-worker/*.test.js'],
   },
 });

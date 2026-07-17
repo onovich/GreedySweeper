@@ -23,6 +23,7 @@
     "protocol:evaluate": "node packages/online-protocol/evaluate.mjs",
     "online:evaluate": "node packages/online-protocol/online-evaluate.mjs",
     "worker:test": "vitest run --config apps/room-worker/vitest.config.js",
+    "online:e2e": "vitest run --config apps/room-worker/vitest.config.js --testNamePattern=two-client",
     "worker:dry-run": "wrangler deploy --config apps/room-worker/wrangler.jsonc --dry-run",
     "workspace:check": "node scripts/workspace-check.mjs"
   },
