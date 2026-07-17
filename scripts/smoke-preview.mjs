@@ -6,18 +6,6 @@ const REQUEST_TIMEOUT_MS = 20_000;
 const MESSAGE_TIMEOUT_MS = 20_000;
 const MAX_COMMANDS = 256;
 
-try {
-  await verifyHealth();
-  for (const ruleset of ['classic-v1', 'greed-v2']) await completeRoom(ruleset);
-  console.log(
-    'Preview smoke PASS: HTTPS health and two-client WSS Classic/Greed completion verified.',
-  );
-} catch (error) {
-  const reason = error instanceof Error ? error.message : 'unknown error';
-  console.error(`Preview smoke failed: ${reason}`);
-  process.exitCode = 1;
-}
-
 function requiredPreviewEndpoint(value) {
   if (!value) throw new Error('Missing Preview endpoint');
   const endpoint = new URL(value);
@@ -222,4 +210,16 @@ class SocketClient {
       waiter.reject(new Error(reason));
     }
   }
+}
+
+try {
+  await verifyHealth();
+  for (const ruleset of ['classic-v1', 'greed-v2']) await completeRoom(ruleset);
+  console.log(
+    'Preview smoke PASS: HTTPS health and two-client WSS Classic/Greed completion verified.',
+  );
+} catch (error) {
+  const reason = error instanceof Error ? error.message : 'unknown error';
+  console.error(`Preview smoke failed: ${reason}`);
+  process.exitCode = 1;
 }
