@@ -2,7 +2,7 @@
 
 Phase: Phase 6B - Playable Private-Room Vertical Slice
 
-Status: PASS with an explicit Preview browser-smoke limitation recorded below
+Status: PASS
 
 Rounds used: 12 main, 0 buffer, 1 final
 
@@ -48,9 +48,11 @@ git diff --check
 
 `online:evaluate` covers room setup, acceptance, authentication, command contract, public projection, and terminal-proof validators. The reusable `online:e2e` command is included in the Pages CI validation workflow.
 
+The reusable `npm run online:preview-smoke` command accepts `PREVIEW_ENDPOINT`, requires a clean HTTPS origin, verifies `/health`, then creates two ephemeral clients for each ruleset and completes Classic and Greed through public WSS commands. It retains room code, seat tokens, and terminal proof only in process memory and emits only a fixed pass/fail summary. The dedicated [Preview Worker Smoke workflow](../.github/workflows/preview-smoke.yml) runs this command from a GitHub-hosted network with only `contents: read`; it has no Cloudflare credential, deployment, DNS, or secret-writing step.
+
 ## Commits and remote
 
-Implementation trail: `774aac7` boundary contract; `f07119a` protocol; `9beb5ab` room schema; `1e6d4ac` setup metadata; `e74f719` seat authentication; `fc12db1` authority initialization; `44782da` ordered commands; `c1a60c2` idempotency tests; `b80624c` room setup UI; `9ad42b2` synchronization; `13d53d4` online board; `a703dbe` authenticated projection repair; `cee4a7b` broadcasts; `5237fc9` terminal proof; `2655b26` Classic/Greed completion; `ce71b7a` architecture repair; `036d1cb` Preview prerequisite; and `fc4bf34` two-client coverage, Preview configuration, CI, and report closure.
+Implementation trail: `774aac7` boundary contract; `f07119a` protocol; `9beb5ab` room schema; `1e6d4ac` setup metadata; `e74f719` seat authentication; `fc12db1` authority initialization; `44782da` ordered commands; `c1a60c2` idempotency tests; `b80624c` room setup UI; `9ad42b2` synchronization; `13d53d4` online board; `a703dbe` authenticated projection repair; `cee4a7b` broadcasts; `5237fc9` terminal proof; `2655b26` Classic/Greed completion; `ce71b7a` architecture repair; `036d1cb` Preview prerequisite; `fc4bf34` two-client coverage and closure; `1db1b98` GitHub-hosted Preview smoke; `0c92b42` safe smoke diagnostics; and `0d67638` smoke initialization repair.
 
 Remote: final closure pushed to `origin/main`.
 
@@ -58,7 +60,7 @@ Remote: final closure pushed to `origin/main`.
 
 The only deployment is the isolated Preview Worker at `https://greedy-sweeper-room-preview.onovich1110.workers.dev`. Cloudflare Wrangler deployment inspection reports Worker version `9ec485d4-1acf-4a05-aadc-a6e6ff15da1f`, created 2026-07-17 22:01:49 UTC. The Worker name is deliberately `greedy-sweeper-room-preview`; no production route, custom domain, DNS change, Paid-plan activation, or production secret was created.
 
-The deployment record plus the local two-client Workers-runtime WebSocket suite verify the published Worker configuration and authority path. Direct HTTPS/WSS smoke from this executor remains an explicit environmental limitation: `curl` timed out connecting to port 443 and both the in-app browser and Chrome returned `net::ERR_BLOCKED_BY_CLIENT` for the `workers.dev` URL. These failures occur before the Worker returns a response, so no seat token, room code, seed, or salt was created or exposed by the attempted remote probes. The next maintainer can remove the isolated Preview with `npx wrangler delete greedy-sweeper-room-preview`; that is rollback/removal only and was not run here.
+The deployment record plus the local two-client Workers-runtime WebSocket suite verify the published Worker configuration and authority path. Direct HTTPS/WSS smoke from this executor remains blocked before a Worker response (`curl` port-443 timeout and `net::ERR_BLOCKED_BY_CLIENT` in both browser surfaces), but the required independent check is now proven externally: GitHub Actions run [`29618451037`](https://github.com/onovich/GreedySweeper/actions/runs/29618451037) completed successfully on 2026-07-17. Its `HTTPS and WSS two-client smoke` job ran from a GitHub-hosted Ubuntu runner with `contents: read` only and emitted the fixed non-secret result: `Preview smoke PASS: HTTPS health and two-client WSS Classic/Greed completion verified.` No seat token, room code, seed, salt, or credential appears in that smoke output. The next maintainer can remove the isolated Preview with `npx wrangler delete greedy-sweeper-room-preview`; that is rollback/removal only and was not run here.
 
 ## Scope and residual risks
 
@@ -66,6 +68,6 @@ Production deployment/DNS: none (required).
 
 Scope deviations: none. Phase 6C work was not started.
 
-Residual risks: an unblocked external browser/network must run the final remote HTTPS/WSS two-client smoke before production consideration. Phase 6C still owns reconnect/seat replacement, WebSocket hibernation hardening, alarms, retention/deletion, rate limiting, Turnstile, logs policy, load targets, cost controls, online progression, Paid-plan activation, production deployment, and custom-domain/DNS release.
+Residual risks: Phase 6C still owns reconnect/seat replacement, WebSocket hibernation hardening, alarms, retention/deletion, rate limiting, Turnstile, logs policy, load targets, cost controls, online progression, Paid-plan activation, production deployment, and custom-domain/DNS release.
 
 Return to planner: 019f6768-2328-76f2-a6e4-da752c6eb85c
