@@ -12,8 +12,9 @@ try {
   console.log(
     'Preview smoke PASS: HTTPS health and two-client WSS Classic/Greed completion verified.',
   );
-} catch {
-  console.error('Preview smoke failed.');
+} catch (error) {
+  const reason = error instanceof Error ? error.message : 'unknown error';
+  console.error(`Preview smoke failed: ${reason}`);
   process.exitCode = 1;
 }
 
