@@ -7,6 +7,7 @@ import {
 import { BOARD_CONFIG } from '@greedy-sweeper/game-core/config/game-config';
 import { createChallengeBoard } from '@greedy-sweeper/game-core/challenge/board';
 import { createChallengeDescriptor } from '@greedy-sweeper/game-core/challenge/contracts';
+import { applyAction } from '@greedy-sweeper/game-core/engine/transition';
 import {
   createGreedInitialState,
   createInitialState,
@@ -122,7 +123,7 @@ export class RoomDurableObject {
     const pair = new WebSocketPair();
     const [client, server] = Object.values(pair);
     server.accept();
-    server.addEventListener('message', (event) => this.authenticateSocket(server, event));
+    server.addEventListener('message', (event) => this.handleSocketMessage(server, event));
     return new Response(null, { status: 101, webSocket: client });
   }
 
@@ -155,6 +156,7 @@ export class RoomDurableObject {
           ? 'invitee'
           : null;
     if (!seat) return closeProtocol(socket, 'online_unauthorized_seat');
+    socket.serializeAttachment({ seat });
     socket.send(JSON.stringify(envelope('authenticated', { seat })));
     socket.send(
       JSON.stringify(
@@ -169,6 +171,78 @@ export class RoomDurableObject {
         }),
       ),
     );
+  }
+
+  async handleSocketMessage(socket, event) {
+    if (!socket.deserializeAttachment()) return this.authenticateSocket(socket, event);
+    let message;
+    try {
+      message = JSON.parse(event.data);
+    } catch {
+      return closeProtocol(socket, 'online_malformed');
+    }
+    if (message?.version !== ONLINE_PROTOCOL_VERSION || message?.type !== 'submit_command')
+      return closeProtocol(socket, 'online_malformed');
+    const result = await this.acceptCommand(socket.deserializeAttachment().seat, message.payload);
+    if (result.error)
+      return socket.send(
+        JSON.stringify(
+          envelope('command_rejected', {
+            commandId: message.payload?.commandId ?? 'invalid',
+            sequence: message.payload?.sequence ?? -1,
+            error: result.error,
+          }),
+        ),
+      );
+    socket.send(JSON.stringify(envelope('command_accepted', result.accepted)));
+    socket.send(
+      JSON.stringify(
+        envelope('snapshot', { snapshot: projectState(result.state, result.sequence) }),
+      ),
+    );
+  }
+
+  async acceptCommand(seat, command) {
+    return this.state.storage.transaction(async () => {
+      const row = Array.from(
+        this.state.storage.sql.exec(
+          'SELECT sequence, descriptor_json, state_json, commands_json FROM room_authority WHERE id = 1',
+        ),
+      )[0];
+      if (!row) return { error: 'online_room_not_ready' };
+      const commands = JSON.parse(row.commands_json);
+      const duplicate = commands.find((item) => item.commandId === command?.commandId);
+      if (duplicate)
+        return { accepted: duplicate, state: JSON.parse(row.state_json), sequence: row.sequence };
+      if (!Number.isInteger(command?.sequence) || command.sequence !== row.sequence)
+        return { error: 'online_stale_sequence' };
+      const state = JSON.parse(row.state_json);
+      const player = seat === 'creator' ? 'human' : 'ai';
+      if (state.currentPlayer !== player || command.action?.player !== player)
+        return { error: 'online_wrong_turn' };
+      const descriptor = JSON.parse(row.descriptor_json);
+      const transition = applyAction(
+        state,
+        command.action,
+        descriptor.board,
+        undefined,
+        descriptor,
+      );
+      if (transition.result.type !== 'applied') return { error: 'online_command_rejected' };
+      const accepted = {
+        commandId: command.commandId,
+        sequence: row.sequence,
+        action: command.action,
+      };
+      commands.push(accepted);
+      this.state.storage.sql.exec(
+        'UPDATE room_authority SET sequence = ?, state_json = ?, commands_json = ? WHERE id = 1',
+        row.sequence + 1,
+        JSON.stringify(transition.state),
+        JSON.stringify(commands),
+      );
+      return { accepted, state: transition.state, sequence: row.sequence + 1 };
+    });
   }
 }
 
@@ -250,4 +324,22 @@ function envelope(type, payload) {
 function closeProtocol(socket, code) {
   socket.send(JSON.stringify(envelope('protocol_error', { error: code })));
   socket.close(1008, code);
+}
+
+function projectState(state, sequence) {
+  return {
+    sequence,
+    humanScore: state.humanScore,
+    aiScore: state.aiScore,
+    gameOver: state.gameOver,
+    currentSeat: state.currentPlayer === 'human' ? 'creator' : 'invitee',
+    board: state.board.flatMap((row, rowIndex) =>
+      row.map((cell, column) => ({
+        row: rowIndex,
+        column,
+        state: cell.isRevealed ? 'revealed' : cell.isFlagged ? 'flagged' : 'hidden',
+        ...(cell.isRevealed ? { neighborMines: cell.neighborMines } : {}),
+      })),
+    ),
+  };
 }
