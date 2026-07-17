@@ -46,7 +46,7 @@ git diff --check
 
 ## Commits and remote
 
-Implementation trail: `fabaf8c` workspace/protocol foundation; `0ed315d` web relocation; `0fe7a58` game-core extraction; `1ef4f0e` protocol envelopes; `fbf2331` Worker toolchain; `47c1887` Wrangler formatting; final closure commit follows this report. The final closure is pushed to `origin/main`.
+Implementation trail: `fabaf8c` workspace/protocol foundation; `0ed315d` web relocation; `0fe7a58` game-core extraction; `1ef4f0e` protocol envelopes; `fbf2331` Worker toolchain; `47c1887` Wrangler formatting; `5f5649b` shared-core, Worker runtime, guards, CI, and report closure. The final closure is pushed to `origin/main`.
 
 Remote deployment: none (required). GitHub Pages remains the existing static deployment path; this phase changes its artifact path only.
 
