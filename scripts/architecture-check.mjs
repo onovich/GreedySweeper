@@ -5,6 +5,7 @@ const root = resolve(import.meta.dirname, '..');
 const gameRoot = join(root, 'packages', 'game-core', 'src');
 const protocolRoot = join(root, 'packages', 'online-protocol');
 const workerRoot = join(root, 'apps', 'room-worker');
+const onlineApplicationRoot = join(root, 'apps', 'web', 'src', 'application', 'online');
 const webSourceRoot = join(root, 'apps', 'web', 'src');
 const applicationRoot = join(webSourceRoot, 'application');
 const requiredBoundaries = [
@@ -88,6 +89,23 @@ for (const filePath of filesBelow(workerRoot).filter((file) => /\.js$/.test(file
     violations.push(`${relative(root, filePath)} imports an application or package internal path.`);
   if (/\b(applyAction|createBoard|replayGame|humanScore|aiScore)\b/.test(source))
     violations.push(`${relative(root, filePath)} contains copied game authority semantics.`);
+  if (/console\.(?:log|info|debug)\([^\n]*(?:seatToken|tokenDigest|seed|salt)/.test(source))
+    violations.push(`${relative(root, filePath)} may log an online secret.`);
+}
+for (const filePath of filesBelow(onlineApplicationRoot).filter((file) =>
+  /\.(js|jsx)$/.test(file),
+)) {
+  const source = readFileSync(filePath, 'utf8');
+  if (/useGameController/.test(source))
+    violations.push(`${relative(root, filePath)} couples the online controller to local gameplay.`);
+  if (/\b(localStorage|createBrowserProgressionStorage|createBrowserHistoryStorage)\b/.test(source))
+    violations.push(
+      `${relative(root, filePath)} persists online session data outside session storage.`,
+    );
+  if (/\b(applyAction|createInitialState|createGreedInitialState)\b/.test(source))
+    violations.push(
+      `${relative(root, filePath)} optimistically executes canonical online gameplay.`,
+    );
 }
 for (const filePath of filesBelow(webSourceRoot).filter((file) => /\.(js|jsx)$/.test(file))) {
   const source = readFileSync(filePath, 'utf8');
