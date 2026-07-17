@@ -47,6 +47,15 @@ export function OnlineRoomPanel({ online }) {
           Accept rules and join
         </button>
       )}
+      {online.status === 'ready' && (
+        <button
+          type="button"
+          className="replay-button mt-2"
+          onClick={() => online.connect(online.room)}
+        >
+          Connect to room
+        </button>
+      )}
       {online.status === 'waiting' && (
         <p className="mt-2 text-xs text-gray-400">Share invite: ?room={online.room.roomCode}</p>
       )}
