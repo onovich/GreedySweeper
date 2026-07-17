@@ -1,3 +1,4 @@
+/* global console */
 import {
   ONLINE_RULESETS,
   validateClientMessage,

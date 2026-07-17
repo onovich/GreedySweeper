@@ -11,6 +11,10 @@ export default [
     languageOptions: { globals: globals.node },
   },
   {
+    files: ['apps/room-worker/**/*.js'],
+    languageOptions: { globals: { WebSocketPair: 'readonly' } },
+  },
+  {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
       ecmaVersion: 'latest',
