@@ -13,6 +13,11 @@ npm run build
 npm run ai:evaluate
 npm run greed:evaluate
 npm run progression:evaluate
+npm run protocol:evaluate
+npm run worker:test
+npm run worker:dry-run
+npm run workspace:check
+git diff --check
 ```
 
 Use the initialized project Git wrapper with explicit paths and Conventional Commit messages. Do not use `--no-verify`, force push, or bypass validation.
@@ -21,7 +26,9 @@ Use the initialized project Git wrapper with explicit paths and Conventional Com
 
 - [ ] The change preserves Greedy Sweeper behavior and does not modify `origin/`.
 - [ ] Tests cover the relevant rule, controller, or UI intent.
-- [ ] Pure game code has no React, DOM, timer, or UI import.
+- [ ] Pure game code in `packages/game-core` has no React, DOM, timer, network, or UI import.
+- [ ] Web and Worker code use public `@greedy-sweeper/*` package exports, never package `src/` paths.
+- [ ] Worker changes keep the ES-module/SQLite foundation local-only: no deployment, WebSocket, room UI, or game authority.
 - [ ] UI/controller code does not duplicate engine or AI logic.
 - [ ] New text is readable Chinese or English, never mojibake.
 - [ ] Documentation and local commands still match the repository.

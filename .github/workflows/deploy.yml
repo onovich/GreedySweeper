@@ -29,12 +29,25 @@ jobs:
         uses: actions/configure-pages@v5
       - name: Install dependencies
         run: npm ci
+      - name: Validate workspace foundation
+        run: |
+          npm run format:check
+          npm run lint
+          npm run test:run
+          npm run ai:evaluate
+          npm run greed:evaluate
+          npm run progression:evaluate
+          npm run protocol:evaluate
+          npm run worker:test
+          npm run worker:dry-run
+          npm run workspace:check
+          npm run arch:check
       - name: Build
         run: npm run build
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: apps/web/dist
 
   deploy:
     environment:

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { TIMING_CONFIG } from '../game/config/game-config';
+import { TIMING_CONFIG } from '@greedy-sweeper/game-core/config/game-config';
 
 export function useCellPointerIntent({
   onReveal,

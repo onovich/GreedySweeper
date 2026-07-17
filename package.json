@@ -21,8 +21,8 @@
     "greed:evaluate": "node scripts/evaluate-greed-balance.mjs",
     "progression:evaluate": "node scripts/evaluate-progression.mjs",
     "protocol:evaluate": "node packages/online-protocol/evaluate.mjs",
-    "worker:test": "node apps/room-worker/test.mjs",
-    "worker:dry-run": "node apps/room-worker/dry-run.mjs",
+    "worker:test": "vitest run --config apps/room-worker/vitest.config.js",
+    "worker:dry-run": "wrangler deploy --config apps/room-worker/wrangler.jsonc --dry-run",
     "workspace:check": "node scripts/workspace-check.mjs"
   },
   "dependencies": {

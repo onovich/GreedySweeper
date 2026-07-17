@@ -1,29 +1,39 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { selectAiAction } from '../game/ai/select-action';
+import { selectAiAction } from '@greedy-sweeper/game-core/ai/select-action';
 import {
   AI_POLICY_ERROR_CODES,
   DEFAULT_AI_POLICY,
   createAiPolicy,
   validateAiPolicy,
-} from '../game/ai/policy-config';
-import { createChallengeBoard } from '../game/challenge/board';
-import { decodeChallengeCode } from '../game/challenge/code';
-import { createDailyChallenge } from '../game/challenge/daily';
-import { createChallengeDescriptor } from '../game/challenge/contracts';
-import { BOARD_CONFIG, SCORE_CONFIG, TIMING_CONFIG } from '../game/config/game-config';
-import { DEFAULT_NEW_GAME_MODE, GREED_CHALLENGE_MODE } from '../game/config/protocol-config';
-import { applyAction } from '../game/engine/transition';
+} from '@greedy-sweeper/game-core/ai/policy-config';
+import { createChallengeBoard } from '@greedy-sweeper/game-core/challenge/board';
+import { decodeChallengeCode } from '@greedy-sweeper/game-core/challenge/code';
+import { createDailyChallenge } from '@greedy-sweeper/game-core/challenge/daily';
+import { createChallengeDescriptor } from '@greedy-sweeper/game-core/challenge/contracts';
+import {
+  BOARD_CONFIG,
+  SCORE_CONFIG,
+  TIMING_CONFIG,
+} from '@greedy-sweeper/game-core/config/game-config';
+import {
+  DEFAULT_NEW_GAME_MODE,
+  GREED_CHALLENGE_MODE,
+} from '@greedy-sweeper/game-core/config/protocol-config';
+import { applyAction } from '@greedy-sweeper/game-core/engine/transition';
 import {
   PLAYERS,
   RESULT_TYPES,
   createBankAction,
   createFlagAction,
   createRevealAction,
-} from '../game/model/contracts';
-import { createGreedInitialState, createInitialState } from '../game/model/factories';
-import { appendActionRecord } from '../game/replay/action-log';
-import { createReplaySummary } from '../game/replay/integrity';
-import { replayGameAt } from '../game/replay/replay-engine';
+} from '@greedy-sweeper/game-core/model/contracts';
+import {
+  createGreedInitialState,
+  createInitialState,
+} from '@greedy-sweeper/game-core/model/factories';
+import { appendActionRecord } from '@greedy-sweeper/game-core/replay/action-log';
+import { createReplaySummary } from '@greedy-sweeper/game-core/replay/integrity';
+import { replayGameAt } from '@greedy-sweeper/game-core/replay/replay-engine';
 import { createHistoryEntry } from './storage/history-storage';
 import { deriveCompletedGameFacts } from '../progression/derive-game-facts';
 import { appendCompletedFacts, createProfile, getProfileStats } from '../progression/profile';

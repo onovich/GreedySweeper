@@ -1,33 +1,32 @@
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, lstatSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
-const gameRoot = join(root, 'apps', 'web', 'src', 'game');
-const applicationRoot = join(root, 'apps', 'web', 'src', 'application');
+const gameRoot = join(root, 'packages', 'game-core', 'src');
+const protocolRoot = join(root, 'packages', 'online-protocol');
+const workerRoot = join(root, 'apps', 'room-worker');
+const webSourceRoot = join(root, 'apps', 'web', 'src');
+const applicationRoot = join(webSourceRoot, 'application');
 const requiredBoundaries = [
-  'apps/web/src/app/App.jsx',
+  'apps/web/src/app',
   'apps/web/src/application',
-  'apps/web/src/game/config',
-  'apps/web/src/game/model',
-  'apps/web/src/game/engine',
-  'apps/web/src/game/ai',
-  'apps/web/src/game/challenge',
-  'apps/web/src/game/random',
-  'apps/web/src/game/replay',
-  'apps/web/src/application/storage',
-  'apps/web/src/game/selectors',
-  'apps/web/src/ui/components',
-  'apps/web/src/ui/screens',
-  'packages/game-core',
+  'apps/web/src/progression',
+  'apps/web/src/ui',
+  'packages/game-core/src',
   'packages/online-protocol',
-  'apps/room-worker',
+  'apps/room-worker/src',
 ];
-const forbiddenPatterns = [
+const sharedForbidden = [
   { pattern: /from\s+['"]react(?:\/[^'"]*)?['"]/, description: 'React import' },
-  { pattern: /from\s+['"][^'"]*\/ui(?:\/[^'"]*)?['"]/, description: 'UI import' },
-  { pattern: /\b(document|window|setTimeout|setInterval)\b/, description: 'browser or timer API' },
+  {
+    pattern:
+      /\b(document|window|localStorage|sessionStorage|setTimeout|setInterval|fetch|WebSocket)\b/,
+    description: 'browser, timer, or network API',
+  },
+  { pattern: /from\s+['"](?:cloudflare:|wrangler)/, description: 'Cloudflare platform import' },
+  { pattern: /from\s+['"][^'"]*(?:apps\/web|\/ui\/)/, description: 'web or UI import' },
 ];
-const applicationForbiddenPatterns = [
+const applicationForbidden = [
   { pattern: /from\s+['"][^'"]*\/ui(?:\/[^'"]*)?['"]/, description: 'UI import' },
   {
     pattern: /\b(localStorage|sessionStorage)\b/,
@@ -43,33 +42,64 @@ function filesBelow(directory) {
   });
 }
 
-const violations = [];
-for (const boundary of requiredBoundaries) {
-  if (!existsSync(join(root, boundary))) {
-    violations.push(`Missing required architecture boundary: ${boundary}.`);
-  }
-}
-for (const filePath of filesBelow(gameRoot).filter((file) => /\.(js|jsx)$/.test(file))) {
-  const source = readFileSync(filePath, 'utf8');
-  for (const rule of forbiddenPatterns) {
-    if (rule.pattern.test(source)) {
-      violations.push(`${relative(root, filePath)} contains forbidden ${rule.description}.`);
+function inspectFiles(directory, rules, violations) {
+  for (const filePath of filesBelow(directory).filter((file) => /\.(js|jsx)$/.test(file))) {
+    const source = readFileSync(filePath, 'utf8');
+    for (const rule of rules) {
+      if (rule.pattern.test(source))
+        violations.push(`${relative(root, filePath)} contains forbidden ${rule.description}.`);
     }
   }
+}
+
+const violations = [];
+for (const boundary of requiredBoundaries) {
+  if (!existsSync(join(root, boundary)))
+    violations.push(`Missing required architecture boundary: ${boundary}.`);
+}
+
+const legacyGameLink = join(webSourceRoot, 'game');
+if (!existsSync(legacyGameLink) || !lstatSync(legacyGameLink).isSymbolicLink()) {
+  violations.push(
+    'apps/web/src/game must be the temporary test-only link to the shared game-core source.',
+  );
+} else if (realpathSync(legacyGameLink) !== realpathSync(gameRoot)) {
+  violations.push(
+    'apps/web/src/game must resolve to packages/game-core/src and never contain copied gameplay code.',
+  );
+}
+
+inspectFiles(gameRoot, sharedForbidden, violations);
+inspectFiles(protocolRoot, sharedForbidden, violations);
+for (const filePath of filesBelow(protocolRoot).filter((file) => /\.js$/.test(file))) {
+  const source = readFileSync(filePath, 'utf8');
+  if (/from\s+['"][^'"]*(?:engine\/transition|engine\/rules|replay\/replay-engine)/.test(source))
+    violations.push(
+      `${relative(root, filePath)} executes game rules instead of using the public action validator.`,
+    );
+}
+for (const filePath of filesBelow(workerRoot).filter((file) => /\.js$/.test(file))) {
+  const source = readFileSync(filePath, 'utf8');
+  if (
+    /from\s+['"][^'"]*(?:apps\/web|packages\/game-core\/src|packages\/online-protocol\/)/.test(
+      source,
+    )
+  )
+    violations.push(`${relative(root, filePath)} imports an application or package internal path.`);
+  if (/\b(applyAction|createBoard|replayGame|humanScore|aiScore)\b/.test(source))
+    violations.push(`${relative(root, filePath)} contains copied game authority semantics.`);
+}
+for (const filePath of filesBelow(webSourceRoot).filter((file) => /\.(js|jsx)$/.test(file))) {
+  const source = readFileSync(filePath, 'utf8');
+  if (/from\s+['"](?:\.\.\/|\.\/)*game\//.test(source))
+    violations.push(`${relative(root, filePath)} bypasses the game-core public package export.`);
 }
 for (const filePath of filesBelow(applicationRoot).filter((file) => /\.(js|jsx)$/.test(file))) {
   if (relative(applicationRoot, filePath).startsWith('storage')) continue;
   const source = readFileSync(filePath, 'utf8');
-  for (const rule of applicationForbiddenPatterns) {
-    if (rule.pattern.test(source)) {
+  for (const rule of applicationForbidden) {
+    if (rule.pattern.test(source))
       violations.push(`${relative(root, filePath)} contains forbidden ${rule.description}.`);
-    }
-  }
-}
-for (const filePath of filesBelow(join(gameRoot, 'replay')).filter((file) => /\.js$/.test(file))) {
-  const source = readFileSync(filePath, 'utf8');
-  if (/from\s+['"][^'"]*\/ai\//.test(source)) {
-    violations.push(`${relative(root, filePath)} must not import AI policy implementation.`);
   }
 }
 
@@ -78,4 +108,6 @@ if (violations.length > 0) {
   process.exit(1);
 }
 
-console.log('Architecture check passed: game purity and application storage boundaries hold.');
+console.log(
+  'Architecture check passed: package direction, pure shared code, and game-core ownership hold.',
+);

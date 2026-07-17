@@ -1,3 +1,5 @@
+import { ONLINE_PROTOCOL_VERSION } from '@greedy-sweeper/online-protocol';
+
 export class RoomDurableObject {
   constructor(state) {
     this.state = state;
@@ -18,7 +20,7 @@ export default {
   async fetch(request) {
     const url = new URL(request.url);
     return url.pathname === '/health'
-      ? Response.json({ status: 'ok', onlineProtocol: '1' })
+      ? Response.json({ status: 'ok', onlineProtocol: ONLINE_PROTOCOL_VERSION })
       : new Response('Not found', { status: 404 });
   },
 };

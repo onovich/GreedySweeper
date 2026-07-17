@@ -2,7 +2,7 @@ import {
   appendCompletedFacts,
   createProfile,
   getProfileStats,
-} from '../src/progression/profile.js';
+} from '../apps/web/src/progression/profile.js';
 const make = (id, winner = 'human') => ({
   id: `evaluation:${id}`,
   completedAt: '2026-07-17T00:00:00.000Z',

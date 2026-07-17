@@ -1,5 +1,5 @@
 import { Bomb, Flag, X } from 'lucide-react';
-import { getNumberColorClass } from '../../game/selectors/game-selectors';
+import { getNumberColorClass } from '@greedy-sweeper/game-core/selectors/game-selectors';
 
 export function GameCell({ cell, row, column, isHumanTurn, pointerIntent, onReveal, onFlag }) {
   const label = getCellLabel(cell, row, column);

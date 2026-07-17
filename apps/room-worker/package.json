@@ -1,5 +1,8 @@
 {
   "name": "@greedy-sweeper/room-worker",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "@greedy-sweeper/online-protocol": "*"
+  }
 }

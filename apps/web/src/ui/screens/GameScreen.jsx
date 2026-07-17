@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Cpu, Info, RotateCcw, Trophy } from 'lucide-react';
-import { BOARD_CONFIG, SCORE_CONFIG } from '../../game/config/game-config';
-import { encodeChallengeCode } from '../../game/challenge/code';
-import { getRemainingMines, getWinner } from '../../game/selectors/game-selectors';
+import { BOARD_CONFIG, SCORE_CONFIG } from '@greedy-sweeper/game-core/config/game-config';
+import { encodeChallengeCode } from '@greedy-sweeper/game-core/challenge/code';
+import { getRemainingMines, getWinner } from '@greedy-sweeper/game-core/selectors/game-selectors';
 import { ScorePanel } from '../components/ScorePanel';
 import { GameBoard } from '../components/GameBoard';
 import { ReplayControls } from '../components/ReplayControls';

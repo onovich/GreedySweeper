@@ -1,5 +1,5 @@
 import { FACTS_VERSION } from './config.js';
-import { validateReplayIntegrity } from '../game/replay/integrity.js';
+import { validateReplayIntegrity } from '@greedy-sweeper/game-core/replay/integrity';
 
 export function deriveCompletedGameFacts(replay, { completedAt, sessionSource = 'unknown' } = {}) {
   if (typeof completedAt !== 'string' || Number.isNaN(Date.parse(completedAt)))

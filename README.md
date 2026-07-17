@@ -25,6 +25,13 @@ Double-click `RunLocal.cmd` on Windows to select an available local port and ope
 npm run format:check
 npm run lint
 npm run test:run
+npm run ai:evaluate
+npm run greed:evaluate
+npm run progression:evaluate
+npm run protocol:evaluate
+npm run worker:test
+npm run worker:dry-run
+npm run workspace:check
 npm run arch:check
 npm run build
 ```
@@ -37,7 +44,7 @@ The pure, serializable game engine is isolated from React, browser events, timer
 
 ## Roadmap
 
-Phase completion evidence: [Phase 2 validation report](docs/phase-2-validation-report.md), [Phase 3 validation report](docs/phase-3-validation-report.md), [Phase 4 validation report](docs/phase-4-validation-report.md), and [Phase 5 validation report](docs/phase-5-validation-report.md). Phase 6 planning is recorded in the [online architecture decision brief](docs/phase-6-online-architecture-decision-brief.md) and [Phase 6A execution guide](docs/phase-6a-shared-core-online-protocol-foundation-goal-mode-execution-guide.md).
+Phase completion evidence: [Phase 2 validation report](docs/phase-2-validation-report.md), [Phase 3 validation report](docs/phase-3-validation-report.md), [Phase 4 validation report](docs/phase-4-validation-report.md), [Phase 5 validation report](docs/phase-5-validation-report.md), and [Phase 6A validation report](docs/phase-6a-validation-report.md). Phase 6 planning is recorded in the [online architecture decision brief](docs/phase-6-online-architecture-decision-brief.md) and [Phase 6A execution guide](docs/phase-6a-shared-core-online-protocol-foundation-goal-mode-execution-guide.md).
 
 Development proceeds in small playable phases, with architecture and validation gates before each phase advances. See [ROADMAP.md](ROADMAP.md).<br/>**项目按可玩的敏捷小阶段推进，每个阶段都必须通过架构与质量门禁。详见 [ROADMAP.md](ROADMAP.md)。**
 
