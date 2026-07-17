@@ -2,7 +2,7 @@ import { isGameAction } from '@greedy-sweeper/game-core/model/contracts';
 
 export const ONLINE_PROTOCOL_VERSION = '1';
 export const ONLINE_MESSAGE_MAX_BYTES = 16384;
-export const ROOM_CODE_PATTERN = /^[A-Z2-9]{6}$/;
+export const ROOM_CODE_PATTERN = /^[A-Z2-9]{8}$/;
 export const COMMAND_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
 export const CLIENT_MESSAGE_TYPES = Object.freeze(['authenticate', 'submit_command', 'pong']);
 export const SERVER_MESSAGE_TYPES = Object.freeze([
@@ -26,7 +26,36 @@ export const ONLINE_ERROR_CODES = Object.freeze({
   duplicateId: 'online_duplicate_id',
   incompatibleRules: 'online_rules_incompatible',
   hiddenState: 'online_hidden_state',
+  roomNotFound: 'online_room_not_found',
+  roomFull: 'online_room_full',
+  rulesNotAccepted: 'online_rules_not_accepted',
+  unauthorizedSeat: 'online_unauthorized_seat',
+  wrongTurn: 'online_wrong_turn',
 });
+
+export const ONLINE_RULESETS = Object.freeze({ classic: 'classic-v1', greed: 'greed-v2' });
+
+export function validateRoomCreateRequest(value) {
+  if (!isExactObject(value, ['ruleset'])) return fail('online_unknown_field');
+  return Object.values(ONLINE_RULESETS).includes(value.ruleset)
+    ? ok({ ruleset: value.ruleset })
+    : fail('online_malformed');
+}
+
+export function validateRoomInspectResponse(value) {
+  if (!isExactObject(value, ['roomCode', 'ruleset', 'lifecycle']))
+    return fail('online_unknown_field');
+  return ROOM_CODE_PATTERN.test(value.roomCode) &&
+    Object.values(ONLINE_RULESETS).includes(value.ruleset) &&
+    ['setup', 'active', 'terminal'].includes(value.lifecycle)
+    ? ok(value)
+    : fail('online_malformed');
+}
+
+export function validateRoomJoinRequest(value) {
+  if (!isExactObject(value, ['rulesetAccepted'])) return fail('online_unknown_field');
+  return value.rulesetAccepted === true ? ok(value) : fail('online_rules_not_accepted');
+}
 
 const REQUIRED = Object.freeze({
   authenticate: ['seatToken'],
@@ -133,6 +162,16 @@ function isValidServerPayload(type, payload) {
 
 function isNonEmptyString(value, maxLength) {
   return typeof value === 'string' && value.length > 0 && value.length <= maxLength;
+}
+
+function isExactObject(value, fields) {
+  return (
+    value &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    Object.keys(value).every((key) => fields.includes(key)) &&
+    Object.keys(value).length === fields.length
+  );
 }
 
 function safelySerialize(value) {
