@@ -29,6 +29,7 @@ export class RoomDurableObject {
     if (request.method === 'POST' && url.pathname === '/setup') return this.setup(request);
     if (request.method === 'GET' && url.pathname === '/inspect') return this.inspect();
     if (request.method === 'POST' && url.pathname === '/join') return this.join(request);
+    if (url.pathname === '/socket') return this.socket(request);
     return new Response('Not found', { status: 404 });
   }
 
@@ -89,6 +90,61 @@ export class RoomDurableObject {
     await this.state.storage.put('terminal-proof', { seed, salt });
     return json({ ruleset: room.ruleset, lifecycle: 'active', openingPlayer, commitment });
   }
+
+  async socket(request) {
+    if (request.headers.get('Upgrade') !== 'websocket')
+      return new Response('Expected WebSocket', { status: 426 });
+    const pair = new WebSocketPair();
+    const [client, server] = Object.values(pair);
+    server.accept();
+    server.addEventListener('message', (event) => this.authenticateSocket(server, event));
+    return new Response(null, { status: 101, webSocket: client });
+  }
+
+  async authenticateSocket(socket, event) {
+    let message;
+    try {
+      message = JSON.parse(event.data);
+    } catch {
+      return closeProtocol(socket, 'online_malformed');
+    }
+    if (
+      message?.version !== ONLINE_PROTOCOL_VERSION ||
+      message?.type !== 'authenticate' ||
+      typeof message?.payload?.seatToken !== 'string'
+    )
+      return closeProtocol(socket, 'online_malformed');
+    const digestValue = await digest(message.payload.seatToken);
+    const room = Array.from(
+      this.state.storage.sql.exec(
+        'SELECT ruleset, lifecycle, creator_digest, invitee_digest FROM room_metadata WHERE id = 1',
+      ),
+    )[0];
+    const match = Array.from(
+      this.state.storage.sql.exec('SELECT opening_player, commitment FROM room_match WHERE id = 1'),
+    )[0];
+    const seat =
+      digestValue === room?.creator_digest
+        ? 'creator'
+        : digestValue === room?.invitee_digest
+          ? 'invitee'
+          : null;
+    if (!seat) return closeProtocol(socket, 'online_unauthorized_seat');
+    socket.send(JSON.stringify(envelope('authenticated', { seat })));
+    socket.send(
+      JSON.stringify(
+        envelope('snapshot', {
+          snapshot: {
+            ruleset: room.ruleset,
+            lifecycle: room.lifecycle,
+            openingPlayer: match?.opening_player ?? null,
+            commitment: match?.commitment ?? null,
+            board: [],
+          },
+        }),
+      ),
+    );
+  }
 }
 
 export default {
@@ -113,7 +169,7 @@ export default {
       if (!setup.ok) return setup;
       return json({ roomCode, seatToken, ruleset: input.value.ruleset }, 201);
     }
-    const match = url.pathname.match(/^\/v1\/rooms\/([A-Z2-9]{8})(?:\/(join))?$/);
+    const match = url.pathname.match(/^\/v1\/rooms\/([A-Z2-9]{8})(?:\/(join|socket))?$/);
     if (!match) return new Response('Not found', { status: 404 });
     const stub = env.ROOM.get(env.ROOM.idFromName(match[1]));
     if (!match[2] && request.method === 'GET') return stub.fetch('https://room.internal/inspect');
@@ -128,6 +184,8 @@ export default {
       if (!response.ok) return response;
       return json({ ...(await response.json()), seatToken }, 201);
     }
+    if (match[2] === 'socket' && request.method === 'GET')
+      return stub.fetch(new Request('https://room.internal/socket', request));
     return new Response('Not found', { status: 404 });
   },
 };
@@ -158,4 +216,13 @@ async function digest(value) {
 
 function json(value, status = 200) {
   return Response.json(value, { status });
+}
+
+function envelope(type, payload) {
+  return { version: ONLINE_PROTOCOL_VERSION, type, payload };
+}
+
+function closeProtocol(socket, code) {
+  socket.send(JSON.stringify(envelope('protocol_error', { error: code })));
+  socket.close(1008, code);
 }
