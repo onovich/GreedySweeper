@@ -56,6 +56,7 @@ export function OnlineRoomPanel({ online }) {
           Connect to room
         </button>
       )}
+      {online.snapshot && <OnlineBoard online={online} />}
       {online.status === 'waiting' && (
         <p className="mt-2 text-xs text-gray-400">Share invite: ?room={online.room.roomCode}</p>
       )}
@@ -64,6 +65,45 @@ export function OnlineRoomPanel({ online }) {
           Online error: {online.error}
         </p>
       )}
+    </section>
+  );
+}
+
+function OnlineBoard({ online }) {
+  const mineCells = online.snapshot.board.length;
+  const yourTurn = online.snapshot.currentSeat === online.room.seat;
+  return (
+    <section className="mt-3" aria-label="Online board">
+      <p className="text-xs text-gray-300">
+        {yourTurn ? 'Your turn' : 'Opponent turn'} · {online.snapshot.humanScore}-
+        {online.snapshot.aiScore}
+      </p>
+      <div
+        className="mt-2 grid grid-cols-[repeat(16,minmax(0,1fr))] gap-px"
+        aria-label="Server-authoritative board"
+      >
+        {online.snapshot.board.map((cell) => (
+          <button
+            key={`${cell.row}-${cell.column}`}
+            type="button"
+            disabled={!yourTurn || online.pending || cell.state !== 'hidden'}
+            onClick={() =>
+              online.command({
+                type: 'reveal',
+                row: cell.row,
+                column: cell.column,
+                player: online.room.seat === 'creator' ? 'human' : 'ai',
+              })
+            }
+            className="aspect-square border border-gray-800 bg-gray-700 text-[8px] disabled:opacity-60"
+          >
+            {cell.state === 'revealed' ? cell.neighborMines : cell.state === 'flagged' ? '⚑' : ''}
+          </button>
+        ))}
+      </div>
+      <p className="mt-1 text-xs text-gray-500">
+        {mineCells} public cells · commands are confirmed by the server.
+      </p>
     </section>
   );
 }
