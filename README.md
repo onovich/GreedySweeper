@@ -29,6 +29,7 @@ npm run ai:evaluate
 npm run greed:evaluate
 npm run progression:evaluate
 npm run protocol:evaluate
+npm run online:evaluate
 npm run worker:test
 npm run worker:dry-run
 npm run workspace:check
@@ -49,6 +50,8 @@ Phase completion evidence: [Phase 2 validation report](docs/phase-2-validation-r
 Development proceeds in small playable phases, with architecture and validation gates before each phase advances. See [ROADMAP.md](ROADMAP.md).<br/>**项目按可玩的敏捷小阶段推进，每个阶段都必须通过架构与质量门禁。详见 [ROADMAP.md](ROADMAP.md)。**
 
 ## Deployment
+
+Online private rooms require an explicit `VITE_ONLINE_ENDPOINT` build-time value and an isolated Cloudflare Workers Preview. The local Worker and all protocol tests run without deployment; Preview deployment requires an authenticated Wrangler session and never uses this repository's Pages domain, production route, or DNS configuration.
 
 ## Seeded challenges and replay
 

@@ -38,6 +38,7 @@ jobs:
           npm run greed:evaluate
           npm run progression:evaluate
           npm run protocol:evaluate
+          npm run online:evaluate
           npm run worker:test
           npm run worker:dry-run
           npm run workspace:check
