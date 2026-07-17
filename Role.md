@@ -2,7 +2,7 @@
 
 workspace: D:\WebProjects\GreedySweeper
 created_at: 2026-07-16T04:15:59.4719751+08:00
-updated_at: 2026-07-17T19:06:00+08:00
+updated_at: 2026-07-17T19:08:00+08:00
 
 planner:
   role: architect
@@ -25,10 +25,10 @@ domain:
 idempotency:
   active_goal_guide: docs/phase-6b-playable-private-room-vertical-slice-goal-mode-execution-guide.md
   active_goal_phase: Phase 6B - Playable Private-Room Vertical Slice
-  last_planner_dispatch: pending
-  last_planner_dispatch_status: ready
+  last_planner_dispatch: 2026-07-17T19:08:00+08:00
+  last_planner_dispatch_status: sent
   last_planner_dispatch_guide: docs/phase-6b-playable-private-room-vertical-slice-goal-mode-execution-guide.md
-  last_planner_dispatch_commit: pending
+  last_planner_dispatch_commit: 6d8dfad
   last_executor_report_commit: 1ea80ff
   last_executor_report_status: accepted
   last_executor_report_at: 2026-07-17T19:06:00+08:00
