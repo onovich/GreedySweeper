@@ -66,6 +66,9 @@ export class RoomDurableObject {
     const match = Array.from(
       this.state.storage.sql.exec('SELECT opening_player, commitment FROM room_match WHERE id = 1'),
     )[0];
+    const authority = Array.from(
+      this.state.storage.sql.exec('SELECT sequence, state_json FROM room_authority WHERE id = 1'),
+    )[0];
     return room
       ? json({
           roomCode: room.room_code,
@@ -163,11 +166,13 @@ export class RoomDurableObject {
       JSON.stringify(
         envelope('snapshot', {
           snapshot: {
+            ...(authority
+              ? projectState(JSON.parse(authority.state_json), authority.sequence)
+              : {}),
             ruleset: room.ruleset,
             lifecycle: room.lifecycle,
             openingPlayer: match?.opening_player ?? null,
             commitment: match?.commitment ?? null,
-            board: [],
           },
         }),
       ),
