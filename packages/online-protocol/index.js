@@ -13,6 +13,7 @@ export const SERVER_MESSAGE_TYPES = Object.freeze([
   'match_paused',
   'match_resumed',
   'match_terminal',
+  'terminal_proof',
   'ping',
   'protocol_error',
 ]);
@@ -72,6 +73,7 @@ const REQUIRED = Object.freeze({
   match_paused: [],
   match_resumed: [],
   match_terminal: ['result'],
+  terminal_proof: ['seed', 'salt', 'commitment', 'openingPlayer'],
   ping: ['nonce'],
   protocol_error: ['error'],
 });
@@ -159,6 +161,13 @@ function isValidServerPayload(type, payload) {
       isNonEmptyString(payload.error, 128)
     );
   if (type === 'match_terminal') return isNonEmptyString(payload.result, 32);
+  if (type === 'terminal_proof')
+    return (
+      isNonEmptyString(payload.seed, 64) &&
+      isNonEmptyString(payload.salt, 64) &&
+      isNonEmptyString(payload.commitment, 128) &&
+      ['creator', 'invitee'].includes(payload.openingPlayer)
+    );
   if (type === 'ping') return isNonEmptyString(payload.nonce, 128);
   if (type === 'protocol_error') return isNonEmptyString(payload.error, 128);
   return type === 'match_paused' || type === 'match_resumed';

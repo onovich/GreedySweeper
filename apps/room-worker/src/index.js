@@ -208,6 +208,27 @@ export class RoomDurableObject {
     );
     for (const peer of this.sockets) peer.send(snapshot);
     socket.send(JSON.stringify(envelope('command_accepted', result.accepted)));
+    if (result.state.gameOver) {
+      const proof = await this.state.storage.get('terminal-proof');
+      const match = Array.from(
+        this.state.storage.sql.exec(
+          'SELECT commitment, opening_player FROM room_match WHERE id = 1',
+        ),
+      )[0];
+      for (const peer of this.sockets) {
+        peer.send(JSON.stringify(envelope('match_terminal', { result: 'complete' })));
+        peer.send(
+          JSON.stringify(
+            envelope('terminal_proof', {
+              seed: String(proof.seed),
+              salt: proof.salt,
+              commitment: match.commitment,
+              openingPlayer: match.opening_player,
+            }),
+          ),
+        );
+      }
+    }
   }
 
   async acceptCommand(seat, command) {

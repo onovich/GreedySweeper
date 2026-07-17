@@ -86,6 +86,10 @@ export function useOnlineRoomController() {
         setPending(false);
         setStatus('connected');
       }
+      if (message.type === 'terminal_proof')
+        verifyTerminalProof(message.payload, nextRoom.ruleset).then((verified) =>
+          setStatus(verified ? 'verified' : 'verification_failed'),
+        );
       if (message.type === 'command_rejected' || message.type === 'protocol_error') {
         setPending(false);
         setError(message.payload.error);
@@ -127,4 +131,18 @@ export function useOnlineRoomController() {
     connect,
     command,
   };
+}
+
+async function verifyTerminalProof(proof, ruleset) {
+  const payload = JSON.stringify({
+    openingPlayer: proof.openingPlayer,
+    ruleset,
+    salt: proof.salt,
+    seed: Number(proof.seed),
+  });
+  const bytes = new Uint8Array(
+    await crypto.subtle.digest('SHA-256', new TextEncoder().encode(payload)),
+  );
+  const hash = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+  return hash === proof.commitment;
 }
