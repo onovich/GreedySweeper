@@ -2,7 +2,7 @@
 
 workspace: D:\WebProjects\GreedySweeper
 created_at: 2026-07-16T04:15:59.4719751+08:00
-updated_at: 2026-07-17T06:33:00+08:00
+updated_at: 2026-07-17T19:06:00+08:00
 
 planner:
   role: architect
@@ -23,19 +23,19 @@ domain:
   evidence: current active onovich.com domain migration thread in the same workspace.
 
 idempotency:
-  active_goal_guide: docs/phase-6a-shared-core-online-protocol-foundation-goal-mode-execution-guide.md
-  active_goal_phase: Phase 6A - Shared Core and Online Protocol Foundation
-  last_planner_dispatch: 2026-07-17T06:33:00+08:00
-  last_planner_dispatch_status: sent
-  last_planner_dispatch_guide: docs/phase-6a-shared-core-online-protocol-foundation-goal-mode-execution-guide.md
-  last_planner_dispatch_commit: 9c33c54
-  last_executor_report_commit: 5e74e60
+  active_goal_guide: docs/phase-6b-playable-private-room-vertical-slice-goal-mode-execution-guide.md
+  active_goal_phase: Phase 6B - Playable Private-Room Vertical Slice
+  last_planner_dispatch: pending
+  last_planner_dispatch_status: ready
+  last_planner_dispatch_guide: docs/phase-6b-playable-private-room-vertical-slice-goal-mode-execution-guide.md
+  last_planner_dispatch_commit: pending
+  last_executor_report_commit: 1ea80ff
   last_executor_report_status: accepted
-  last_executor_report_at: 2026-07-17T02:45:00+08:00
-  last_executor_report_guide: docs/phase-5-local-progression-statistics-achievements-goal-mode-execution-guide.md
+  last_executor_report_at: 2026-07-17T19:06:00+08:00
+  last_executor_report_guide: docs/phase-6a-shared-core-online-protocol-foundation-goal-mode-execution-guide.md
   last_check_status: pass
   last_goalnext_trigger: 2026-07-17T04:30:00+08:00
   last_repair_request: 2026-07-17T03:36:00+08:00
   last_repair_request_commit: b894ac2
-  last_completed_phase: Phase 5 - Local progression, statistics, and achievements
-  last_completed_validation: format:check, lint, 77 tests, ai:evaluate, greed:evaluate, progression:evaluate, arch:check, build PASS
+  last_completed_phase: Phase 6A - Shared Core and Online Protocol Foundation
+  last_completed_validation: complete Phase 6A matrix including 77 web tests, 2 Workers-runtime tests, protocol/worker/workspace/architecture/build PASS

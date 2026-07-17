@@ -97,7 +97,7 @@ Exit criteria:
 
 ### Phase 6 - Online Rooms and Authoritative PvP
 
-Status: architecture accepted; Phase 6A shared-core and protocol foundation delivered for acceptance review. Evidence: `docs/phase-6a-validation-report.md`. Decision brief: `docs/phase-6-online-architecture-decision-brief.md`. Execution guide: `docs/phase-6a-shared-core-online-protocol-foundation-goal-mode-execution-guide.md` (16 rounds).
+Status: architecture accepted; Phase 6A shared-core and protocol foundation accepted. Phase 6B playable private-room vertical slice is ready for execution. Evidence: `docs/phase-6a-validation-report.md`. Decision brief: `docs/phase-6-online-architecture-decision-brief.md`. Phase 6B execution guide: `docs/phase-6b-playable-private-room-vertical-slice-goal-mode-execution-guide.md` (16 rounds).
 
 Player value: 支持房间邀请码、实时玩家对战、断线重连、观战和在线回放。
 
