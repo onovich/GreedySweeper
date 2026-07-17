@@ -24,6 +24,7 @@
     "online:evaluate": "node packages/online-protocol/online-evaluate.mjs",
     "worker:test": "vitest run --config apps/room-worker/vitest.config.js",
     "online:e2e": "vitest run --config apps/room-worker/vitest.config.js --testNamePattern=two-client",
+    "online:preview-smoke": "node scripts/smoke-preview.mjs",
     "worker:dry-run": "wrangler deploy --config apps/room-worker/wrangler.jsonc --dry-run",
     "workspace:check": "node scripts/workspace-check.mjs"
   },
@@ -48,6 +49,7 @@
     "tailwindcss": "^3.4.19",
     "vite": "^8.1.4",
     "vitest": "^4.1.10",
-    "wrangler": "^4.111.0"
+    "wrangler": "^4.111.0",
+    "ws": "^8.21.0"
   }
 }
