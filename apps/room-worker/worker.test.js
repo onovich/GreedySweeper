@@ -43,6 +43,18 @@ describe('room worker foundation', () => {
       body: JSON.stringify({ rulesetAccepted: true }),
     });
     expect(joined.status).toBe(201);
-    expect((await joined.json()).seatToken).toHaveLength(43);
+    const invitee = await joined.json();
+    expect(invitee.seatToken).toHaveLength(43);
+    expect(invitee.commitment).toMatch(/^[a-f0-9]{64}$/);
+    expect(['creator', 'invitee']).toContain(invitee.openingPlayer);
+
+    const active = await SELF.fetch(`https://worker.test/v1/rooms/${room.roomCode}`);
+    expect(await active.json()).toEqual({
+      roomCode: room.roomCode,
+      ruleset: 'classic-v1',
+      lifecycle: 'active',
+      openingPlayer: invitee.openingPlayer,
+      commitment: invitee.commitment,
+    });
   });
 });

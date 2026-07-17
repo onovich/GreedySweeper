@@ -35,6 +35,10 @@ export const ONLINE_ERROR_CODES = Object.freeze({
 
 export const ONLINE_RULESETS = Object.freeze({ classic: 'classic-v1', greed: 'greed-v2' });
 
+export function canonicalCommitmentPayload({ ruleset, seed, salt, openingPlayer }) {
+  return JSON.stringify({ openingPlayer, ruleset, salt, seed });
+}
+
 export function validateRoomCreateRequest(value) {
   if (!isExactObject(value, ['ruleset'])) return fail('online_unknown_field');
   return Object.values(ONLINE_RULESETS).includes(value.ruleset)

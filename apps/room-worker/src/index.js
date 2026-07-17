@@ -1,5 +1,6 @@
 import {
   ONLINE_PROTOCOL_VERSION,
+  canonicalCommitmentPayload,
   validateRoomCreateRequest,
   validateRoomJoinRequest,
 } from '@greedy-sweeper/online-protocol';
@@ -14,6 +15,9 @@ export class RoomDurableObject {
   initialize() {
     this.state.storage.sql.exec(
       'CREATE TABLE IF NOT EXISTS room_metadata (id INTEGER PRIMARY KEY, room_code TEXT NOT NULL, ruleset TEXT NOT NULL, lifecycle TEXT NOT NULL, creator_digest TEXT NOT NULL, invitee_digest TEXT)',
+    );
+    this.state.storage.sql.exec(
+      'CREATE TABLE IF NOT EXISTS room_match (id INTEGER PRIMARY KEY, opening_player TEXT NOT NULL, commitment TEXT NOT NULL)',
     );
   }
 
@@ -47,8 +51,16 @@ export class RoomDurableObject {
         'SELECT room_code, ruleset, lifecycle FROM room_metadata WHERE id = 1',
       ),
     )[0];
+    const match = Array.from(
+      this.state.storage.sql.exec('SELECT opening_player, commitment FROM room_match WHERE id = 1'),
+    )[0];
     return room
-      ? json({ roomCode: room.room_code, ruleset: room.ruleset, lifecycle: room.lifecycle })
+      ? json({
+          roomCode: room.room_code,
+          ruleset: room.ruleset,
+          lifecycle: room.lifecycle,
+          ...(match ? { openingPlayer: match.opening_player, commitment: match.commitment } : {}),
+        })
       : json({ error: { code: 'online_room_not_found' } }, 404);
   }
 
@@ -59,11 +71,23 @@ export class RoomDurableObject {
     )[0];
     if (!room) return json({ error: { code: 'online_room_not_found' } }, 404);
     if (room.invitee_digest) return json({ error: { code: 'online_room_full' } }, 409);
+    const seed = createSecret();
+    const salt = createSecret();
+    const openingPlayer = crypto.getRandomValues(new Uint8Array(1))[0] % 2 ? 'creator' : 'invitee';
+    const commitment = await digest(
+      canonicalCommitmentPayload({ ruleset: room.ruleset, seed, salt, openingPlayer }),
+    );
     this.state.storage.sql.exec(
-      'UPDATE room_metadata SET invitee_digest = ? WHERE id = 1',
+      "UPDATE room_metadata SET invitee_digest = ?, lifecycle = 'active' WHERE id = 1",
       inviteeDigest,
     );
-    return json({ ruleset: room.ruleset, lifecycle: 'setup' });
+    this.state.storage.sql.exec(
+      'INSERT INTO room_match (id, opening_player, commitment) VALUES (1, ?, ?)',
+      openingPlayer,
+      commitment,
+    );
+    await this.state.storage.put('terminal-proof', { seed, salt });
+    return json({ ruleset: room.ruleset, lifecycle: 'active', openingPlayer, commitment });
   }
 }
 
@@ -119,6 +143,10 @@ function createSeatToken() {
     .replaceAll('+', '-')
     .replaceAll('/', '_')
     .replace(/=+$/, '');
+}
+
+function createSecret() {
+  return createSeatToken();
 }
 
 async function digest(value) {
