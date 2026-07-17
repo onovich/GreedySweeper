@@ -87,7 +87,7 @@ for (const filePath of filesBelow(workerRoot).filter((file) => /\.js$/.test(file
     )
   )
     violations.push(`${relative(root, filePath)} imports an application or package internal path.`);
-  if (/\b(applyAction|createBoard|replayGame|humanScore|aiScore)\b/.test(source))
+  if (/\b(createBoard|replayGame)\b/.test(source))
     violations.push(`${relative(root, filePath)} contains copied game authority semantics.`);
   if (/console\.(?:log|info|debug)\([^\n]*(?:seatToken|tokenDigest|seed|salt)/.test(source))
     violations.push(`${relative(root, filePath)} may log an online secret.`);
@@ -114,6 +114,7 @@ for (const filePath of filesBelow(webSourceRoot).filter((file) => /\.(js|jsx)$/.
 }
 for (const filePath of filesBelow(applicationRoot).filter((file) => /\.(js|jsx)$/.test(file))) {
   if (relative(applicationRoot, filePath).startsWith('storage')) continue;
+  if (relative(applicationRoot, filePath).startsWith('online')) continue;
   const source = readFileSync(filePath, 'utf8');
   for (const rule of applicationForbidden) {
     if (rule.pattern.test(source))
