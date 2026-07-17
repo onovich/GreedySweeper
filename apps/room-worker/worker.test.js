@@ -20,4 +20,29 @@ describe('room worker foundation', () => {
     const reloaded = await stub.fetch('https://room.test/foundation');
     expect(await reloaded.json()).toEqual({ status: 'foundation', storage: 'sqlite' });
   });
+
+  it('creates, inspects, and accepts one private-room invitee without exposing a token in lookup', async () => {
+    const created = await SELF.fetch('https://worker.test/v1/rooms', {
+      method: 'POST',
+      body: JSON.stringify({ ruleset: 'classic-v1' }),
+    });
+    expect(created.status).toBe(201);
+    const room = await created.json();
+    expect(room.roomCode).toMatch(/^[A-Z2-9]{8}$/);
+    expect(room.seatToken).toHaveLength(43);
+
+    const inspected = await SELF.fetch(`https://worker.test/v1/rooms/${room.roomCode}`);
+    expect(await inspected.json()).toEqual({
+      roomCode: room.roomCode,
+      ruleset: 'classic-v1',
+      lifecycle: 'setup',
+    });
+
+    const joined = await SELF.fetch(`https://worker.test/v1/rooms/${room.roomCode}/join`, {
+      method: 'POST',
+      body: JSON.stringify({ rulesetAccepted: true }),
+    });
+    expect(joined.status).toBe(201);
+    expect((await joined.json()).seatToken).toHaveLength(43);
+  });
 });
