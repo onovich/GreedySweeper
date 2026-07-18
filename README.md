@@ -47,6 +47,8 @@ The pure, serializable game engine is isolated from React, browser events, timer
 
 Phase completion evidence: [Phase 2 validation report](docs/phase-2-validation-report.md), [Phase 3 validation report](docs/phase-3-validation-report.md), [Phase 4 validation report](docs/phase-4-validation-report.md), [Phase 5 validation report](docs/phase-5-validation-report.md), [Phase 6A validation report](docs/phase-6a-validation-report.md), and [Phase 6B validation report](docs/phase-6b-validation-report.md). Phase 6 planning is recorded in the [online architecture decision brief](docs/phase-6-online-architecture-decision-brief.md), [Phase 6A execution guide](docs/phase-6a-shared-core-online-protocol-foundation-goal-mode-execution-guide.md), [Phase 6B execution guide](docs/phase-6b-playable-private-room-vertical-slice-goal-mode-execution-guide.md), and [Phase 6C execution guide](docs/phase-6c-resilience-production-release-goal-mode-execution-guide.md).
 
+Phase 6C resilience and release boundaries are frozen in [the contracts and threat model](docs/phase-6c-contracts-threat-model.md). This is release preparation only; it does not authorize Paid-plan, production, DNS, or custom-domain changes.
+
 Development proceeds in small playable phases, with architecture and validation gates before each phase advances. See [ROADMAP.md](ROADMAP.md).<br/>**项目按可玩的敏捷小阶段推进，每个阶段都必须通过架构与质量门禁。详见 [ROADMAP.md](ROADMAP.md)。**
 
 ## Deployment
