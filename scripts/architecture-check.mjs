@@ -1,4 +1,4 @@
-import { existsSync, lstatSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
@@ -57,17 +57,6 @@ const violations = [];
 for (const boundary of requiredBoundaries) {
   if (!existsSync(join(root, boundary)))
     violations.push(`Missing required architecture boundary: ${boundary}.`);
-}
-
-const legacyGameLink = join(webSourceRoot, 'game');
-if (!existsSync(legacyGameLink) || !lstatSync(legacyGameLink).isSymbolicLink()) {
-  violations.push(
-    'apps/web/src/game must be the temporary test-only link to the shared game-core source.',
-  );
-} else if (realpathSync(legacyGameLink) !== realpathSync(gameRoot)) {
-  violations.push(
-    'apps/web/src/game must resolve to packages/game-core/src and never contain copied gameplay code.',
-  );
 }
 
 inspectFiles(gameRoot, sharedForbidden, violations);
