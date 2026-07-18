@@ -33,10 +33,14 @@ async function verifyHealth() {
 
 async function completeRoom(ruleset) {
   const room = await createRoom(ruleset);
-  const creator = await connectClient(room.roomCode, room.creatorToken);
+  let creator = await connectClient(room.roomCode, room.creatorToken);
   const invitee = await connectClient(room.roomCode, room.inviteeToken);
 
   try {
+    creator.client.close();
+    await invitee.client.waitFor('match_paused');
+    creator = await connectClient(room.roomCode, room.creatorToken);
+    await invitee.client.waitFor('match_resumed');
     let snapshot = creator.snapshot;
     for (let count = 0; !snapshot.gameOver; count += 1) {
       if (count >= MAX_COMMANDS) throw new Error('Room did not complete');
@@ -225,7 +229,7 @@ try {
   await verifyHealth();
   for (const ruleset of ['classic-v1', 'greed-v2']) await completeRoom(ruleset);
   console.log(
-    'Preview smoke PASS: HTTPS health and two-client WSS Classic/Greed completion verified.',
+    'Preview smoke PASS: HTTPS health, WSS reconnect, and two-client Classic/Greed completion verified.',
   );
 } catch (error) {
   const reason = error instanceof Error ? error.message : 'unknown error';
