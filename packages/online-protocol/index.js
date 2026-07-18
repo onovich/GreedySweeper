@@ -44,9 +44,15 @@ export function canonicalCommitmentPayload({ ruleset, seed, salt, openingPlayer 
 }
 
 export function validateRoomCreateRequest(value) {
-  if (!isExactObject(value, ['ruleset'])) return fail('online_unknown_field');
+  if (!isObjectWithAllowedFields(value, ['ruleset', 'turnstileToken']))
+    return fail('online_unknown_field');
   return Object.values(ONLINE_RULESETS).includes(value.ruleset)
-    ? ok({ ruleset: value.ruleset })
+    ? ok({
+        ruleset: value.ruleset,
+        ...(typeof value.turnstileToken === 'string'
+          ? { turnstileToken: value.turnstileToken }
+          : {}),
+      })
     : fail('online_malformed');
 }
 
@@ -188,6 +194,16 @@ function isExactObject(value, fields) {
     !Array.isArray(value) &&
     Object.keys(value).every((key) => fields.includes(key)) &&
     Object.keys(value).length === fields.length
+  );
+}
+
+function isObjectWithAllowedFields(value, fields) {
+  return (
+    value &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    Object.keys(value).every((key) => fields.includes(key)) &&
+    'ruleset' in value
   );
 }
 

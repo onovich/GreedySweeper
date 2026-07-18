@@ -532,6 +532,8 @@ export default {
         return json({ error: { code: 'online_rate_limited' } }, 429);
       const input = validateRoomCreateRequest(await request.json());
       if (!input.ok) return json({ error: input.error }, 400);
+      if (!(await verifyTurnstile(env, input.value.turnstileToken)))
+        return json({ error: { code: 'online_turnstile_failed' } }, 403);
       const roomCode = createRoomCode();
       const seatToken = createSeatToken();
       const stub = env.ROOM.get(env.ROOM.idFromName(roomCode));
@@ -642,6 +644,22 @@ function consumeSourceRate(source, category, limit, windowMs) {
   if (bucket.count >= limit) return false;
   bucket.count += 1;
   return true;
+}
+
+async function verifyTurnstile(env, token) {
+  if (!env.TURNSTILE_SECRET_KEY) return true;
+  if (typeof token !== 'string' || token.length === 0) return false;
+  const response = await fetch(
+    env.TURNSTILE_VERIFY_URL ?? 'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+    {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ response: token, secret: env.TURNSTILE_SECRET_KEY }),
+    },
+  );
+  if (!response.ok) return false;
+  const result = await response.json();
+  return result?.success === true;
 }
 
 function earliestDeadline(...deadlines) {
