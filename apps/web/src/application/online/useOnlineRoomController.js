@@ -1,7 +1,8 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 const endpoint = import.meta.env.VITE_ONLINE_ENDPOINT?.replace(/\/$/, '') ?? '';
 const tokenKey = (roomCode) => `greedy-sweeper:online-seat:${roomCode}`;
+const RECONNECT_DELAY_MS = 1_000;
 
 export function useOnlineRoomController() {
   const [room, setRoom] = useState(null);
@@ -9,6 +10,109 @@ export function useOnlineRoomController() {
   const [error, setError] = useState(null);
   const [snapshot, setSnapshot] = useState(null);
   const [pending, setPending] = useState(false);
+  const socketRef = useRef(null);
+  const reconnectTimerRef = useRef(null);
+  const connectRef = useRef(null);
+  const pendingCommandRef = useRef(null);
+  const disposedRef = useRef(false);
+
+  const clearReconnectTimer = useCallback(() => {
+    if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+    reconnectTimerRef.current = null;
+  }, []);
+
+  const connect = useCallback(
+    (nextRoom, reconnecting = false) => {
+      const token = sessionStorage.getItem(tokenKey(nextRoom.roomCode));
+      if (!token) {
+        setError('online_seat_token_missing');
+        setStatus('error');
+        return;
+      }
+      clearReconnectTimer();
+      setError(null);
+      setStatus(reconnecting ? 'reconnecting' : 'authenticating');
+      const socket = new WebSocket(
+        `${endpoint.replace(/^http/, 'ws')}/v1/rooms/${nextRoom.roomCode}/socket`,
+      );
+      socketRef.current = socket;
+      socket.addEventListener('open', () =>
+        socket.send(
+          JSON.stringify({ version: '1', type: 'authenticate', payload: { seatToken: token } }),
+        ),
+      );
+      socket.addEventListener('message', (event) => {
+        let message;
+        try {
+          message = JSON.parse(event.data);
+        } catch {
+          setError('online_malformed');
+          return;
+        }
+        if (message.type === 'snapshot') {
+          setSnapshot(message.payload.snapshot);
+          setStatus(message.payload.snapshot.lifecycle === 'paused' ? 'paused' : 'connected');
+          const pendingCommand = pendingCommandRef.current;
+          if (pendingCommand) socket.send(JSON.stringify(pendingCommand));
+        }
+        if (message.type === 'command_accepted') {
+          if (pendingCommandRef.current?.payload.commandId === message.payload.commandId) {
+            pendingCommandRef.current = null;
+            setPending(false);
+          }
+        }
+        if (message.type === 'match_paused') {
+          setPending(false);
+          setStatus('paused');
+        }
+        if (message.type === 'match_resumed') setStatus('connected');
+        if (message.type === 'terminal_proof')
+          verifyTerminalProof(message.payload, nextRoom.ruleset).then((verified) =>
+            setStatus(verified ? 'verified' : 'verification_failed'),
+          );
+        if (message.type === 'command_rejected' || message.type === 'protocol_error') {
+          if (
+            message.type === 'protocol_error' ||
+            pendingCommandRef.current?.payload.commandId === message.payload.commandId
+          )
+            pendingCommandRef.current = null;
+          setPending(false);
+          setError(message.payload.error);
+        }
+      });
+      socket.addEventListener('close', (event) => {
+        if (socketRef.current !== socket || disposedRef.current) return;
+        if (event.reason === 'seat_replaced') {
+          pendingCommandRef.current = null;
+          setPending(false);
+          setStatus('replaced');
+          return;
+        }
+        setStatus('reconnecting');
+        reconnectTimerRef.current = setTimeout(
+          () => connectRef.current?.(nextRoom, true),
+          RECONNECT_DELAY_MS,
+        );
+      });
+      socket.addEventListener('error', () => {
+        if (socketRef.current === socket) setError('online_socket_error');
+      });
+    },
+    [clearReconnectTimer],
+  );
+
+  useEffect(() => {
+    connectRef.current = connect;
+  }, [connect]);
+
+  useEffect(
+    () => () => {
+      disposedRef.current = true;
+      clearReconnectTimer();
+      socketRef.current?.close();
+    },
+    [clearReconnectTimer],
+  );
 
   const create = useCallback(async (ruleset) => {
     if (!endpoint) return;
@@ -22,9 +126,7 @@ export function useOnlineRoomController() {
       const value = await response.json();
       if (!response.ok) throw new Error(value.error?.code ?? 'online_create_failed');
       sessionStorage.setItem(tokenKey(value.roomCode), value.seatToken);
-      const next = { roomCode: value.roomCode, ruleset: value.ruleset, seat: 'creator' };
-      sessionStorage.setItem(tokenKey(value.roomCode), value.seatToken);
-      setRoom(next);
+      setRoom({ roomCode: value.roomCode, ruleset: value.ruleset, seat: 'creator' });
       setStatus('waiting');
     } catch (cause) {
       setError(cause.message);
@@ -67,55 +169,19 @@ export function useOnlineRoomController() {
     }
   }, [room]);
 
-  function connect(nextRoom) {
-    const token = sessionStorage.getItem(tokenKey(nextRoom.roomCode));
-    if (!token) return setError('online_seat_token_missing');
-    setStatus('authenticating');
-    const socket = new WebSocket(
-      `${endpoint.replace(/^http/, 'ws')}/v1/rooms/${nextRoom.roomCode}/socket`,
-    );
-    socket.addEventListener('open', () =>
-      socket.send(
-        JSON.stringify({ version: '1', type: 'authenticate', payload: { seatToken: token } }),
-      ),
-    );
-    socket.addEventListener('message', (event) => {
-      const message = JSON.parse(event.data);
-      if (message.type === 'snapshot') {
-        setSnapshot(message.payload.snapshot);
-        setPending(false);
-        setStatus('connected');
-      }
-      if (message.type === 'terminal_proof')
-        verifyTerminalProof(message.payload, nextRoom.ruleset).then((verified) =>
-          setStatus(verified ? 'verified' : 'verification_failed'),
-        );
-      if (message.type === 'command_rejected' || message.type === 'protocol_error') {
-        setPending(false);
-        setError(message.payload.error);
-      }
-    });
-    socket.addEventListener('error', () => {
-      setPending(false);
-      setError('online_socket_error');
-      setStatus('error');
-    });
-    setRoom((current) => ({ ...current, socket }));
-  }
-
   const command = useCallback(
     (action) => {
-      if (pending || !room?.socket || !snapshot) return;
+      if (pending || socketRef.current?.readyState !== WebSocket.OPEN || !snapshot) return;
+      const message = {
+        version: '1',
+        type: 'submit_command',
+        payload: { commandId: crypto.randomUUID(), sequence: snapshot.sequence, action },
+      };
+      pendingCommandRef.current = message;
       setPending(true);
-      room.socket.send(
-        JSON.stringify({
-          version: '1',
-          type: 'submit_command',
-          payload: { commandId: crypto.randomUUID(), sequence: snapshot.sequence, action },
-        }),
-      );
+      socketRef.current.send(JSON.stringify(message));
     },
-    [pending, room, snapshot],
+    [pending, snapshot],
   );
 
   return {

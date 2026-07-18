@@ -60,6 +60,22 @@ export function OnlineRoomPanel({ online }) {
       {online.status === 'waiting' && (
         <p className="mt-2 text-xs text-gray-400">Share invite: ?room={online.room.roomCode}</p>
       )}
+      {online.status === 'reconnecting' && (
+        <p className="mt-2 text-xs text-amber-200">
+          Connection lost. Reclaiming your reserved seat from the server…
+        </p>
+      )}
+      {online.status === 'paused' && (
+        <p className="mt-2 text-xs text-amber-200">
+          Match paused while a seat reconnects. The server will resume only after the seat is
+          reclaimed.
+        </p>
+      )}
+      {online.status === 'replaced' && (
+        <p role="alert" className="mt-2 text-xs text-amber-200">
+          This tab was replaced by a newer connection for the same seat.
+        </p>
+      )}
       {online.error && (
         <p role="alert" className="mt-2 text-xs text-red-300">
           Online error: {online.error}
@@ -86,7 +102,12 @@ function OnlineBoard({ online }) {
           <button
             key={`${cell.row}-${cell.column}`}
             type="button"
-            disabled={!yourTurn || online.pending || cell.state !== 'hidden'}
+            disabled={
+              online.status !== 'connected' ||
+              !yourTurn ||
+              online.pending ||
+              cell.state !== 'hidden'
+            }
             onClick={() =>
               online.command({
                 type: 'reveal',
