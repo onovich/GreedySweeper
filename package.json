@@ -29,6 +29,7 @@
     "online:load": "vitest run --config apps/room-worker/vitest.config.js --testNamePattern=capacity",
     "online:preview-smoke": "node scripts/smoke-preview.mjs",
     "online:free-beta-smoke": "node scripts/smoke-free-beta.mjs",
+    "online:kill-switch-smoke": "node scripts/smoke-online-kill-switch.mjs",
     "worker:dry-run": "wrangler deploy --config apps/room-worker/wrangler.jsonc --dry-run",
     "workspace:check": "node scripts/workspace-check.mjs"
   },
