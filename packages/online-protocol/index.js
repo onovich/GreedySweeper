@@ -1,7 +1,7 @@
 import { isGameAction } from '@greedy-sweeper/game-core/model/contracts';
 
 export const ONLINE_PROTOCOL_VERSION = '1';
-export const ONLINE_MESSAGE_MAX_BYTES = 16384;
+export const ONLINE_MESSAGE_MAX_BYTES = 8192;
 export const ROOM_CODE_PATTERN = /^[A-Z2-9]{8}$/;
 export const COMMAND_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
 export const CLIENT_MESSAGE_TYPES = Object.freeze(['authenticate', 'submit_command', 'pong']);
@@ -32,6 +32,9 @@ export const ONLINE_ERROR_CODES = Object.freeze({
   rulesNotAccepted: 'online_rules_not_accepted',
   unauthorizedSeat: 'online_unauthorized_seat',
   wrongTurn: 'online_wrong_turn',
+  rateLimited: 'online_rate_limited',
+  disabled: 'online_disabled',
+  matchPaused: 'online_match_paused',
 });
 
 export const ONLINE_RULESETS = Object.freeze({ classic: 'classic-v1', greed: 'greed-v2' });
@@ -82,7 +85,8 @@ export function validateEnvelope(value, allowedTypes) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return fail('online_malformed');
   const serialized = safelySerialize(value);
   if (serialized === null) return fail('online_malformed');
-  if (serialized.length > ONLINE_MESSAGE_MAX_BYTES) return fail('online_oversize');
+  if (new TextEncoder().encode(serialized).byteLength > ONLINE_MESSAGE_MAX_BYTES)
+    return fail('online_oversize');
   if (Object.keys(value).some((key) => !['version', 'type', 'payload'].includes(key)))
     return fail('online_unknown_field');
   if (value.version !== ONLINE_PROTOCOL_VERSION) return fail('online_version_unsupported');

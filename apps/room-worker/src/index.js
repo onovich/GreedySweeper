@@ -1,5 +1,6 @@
 import {
   ONLINE_PROTOCOL_VERSION,
+  ONLINE_MESSAGE_MAX_BYTES,
   canonicalCommitmentPayload,
   validateRoomCreateRequest,
   validateRoomJoinRequest,
@@ -18,6 +19,9 @@ const RECONNECT_GRACE_MS = 120_000;
 const SETUP_EXPIRY_MS = 600_000;
 const INACTIVITY_EXPIRY_MS = 600_000;
 const TERMINAL_RETENTION_MS = 3_600_000;
+const COMMAND_LIMIT = 30;
+const COMMAND_WINDOW_MS = 10_000;
+const sourceBuckets = new Map();
 
 export class RoomDurableObject {
   constructor(state) {
@@ -42,6 +46,9 @@ export class RoomDurableObject {
     );
     this.state.storage.sql.exec(
       'CREATE TABLE IF NOT EXISTS room_lifecycle (id INTEGER PRIMARY KEY, state TEXT NOT NULL, next_deadline_at INTEGER, setup_expires_at INTEGER, inactive_expires_at INTEGER, terminal_delete_at INTEGER)',
+    );
+    this.state.storage.sql.exec(
+      'CREATE TABLE IF NOT EXISTS room_command_limits (seat TEXT PRIMARY KEY, window_started_at INTEGER NOT NULL, count INTEGER NOT NULL)',
     );
     this.state.storage.sql.exec(
       'INSERT OR IGNORE INTO room_seats (seat, session_epoch, connected_at) SELECT seat, session_epoch, connected_at FROM room_sessions',
@@ -281,6 +288,8 @@ export class RoomDurableObject {
 
   async handleSocketMessage(socket, data) {
     if (!socket.deserializeAttachment()) return this.authenticateSocket(socket, data);
+    if (messageBytes(data) > ONLINE_MESSAGE_MAX_BYTES)
+      return closeProtocol(socket, 'online_oversize');
     let message;
     try {
       message = JSON.parse(messageText(data));
@@ -344,6 +353,7 @@ export class RoomDurableObject {
       const duplicate = commands.find((item) => item.commandId === command?.commandId);
       if (duplicate)
         return { accepted: duplicate, state: JSON.parse(row.state_json), sequence: row.sequence };
+      if (!this.consumeCommandRate(seat)) return { error: 'online_rate_limited' };
       if (!Number.isInteger(command?.sequence) || command.sequence !== row.sequence)
         return { error: 'online_stale_sequence' };
       const state = JSON.parse(row.state_json);
@@ -485,6 +495,30 @@ export class RoomDurableObject {
       seats.every((seat) => activeSockets.get(seat.seat) === seat.session_epoch)
     );
   }
+
+  consumeCommandRate(seat) {
+    const now = Date.now();
+    const row = Array.from(
+      this.state.storage.sql.exec(
+        'SELECT window_started_at, count FROM room_command_limits WHERE seat = ?',
+        seat,
+      ),
+    )[0];
+    if (!row || now - row.window_started_at >= COMMAND_WINDOW_MS) {
+      this.state.storage.sql.exec(
+        'INSERT INTO room_command_limits (seat, window_started_at, count) VALUES (?, ?, 1) ON CONFLICT(seat) DO UPDATE SET window_started_at = excluded.window_started_at, count = excluded.count',
+        seat,
+        now,
+      );
+      return true;
+    }
+    if (row.count >= COMMAND_LIMIT) return false;
+    this.state.storage.sql.exec(
+      'UPDATE room_command_limits SET count = count + 1 WHERE seat = ?',
+      seat,
+    );
+    return true;
+  }
 }
 
 export default {
@@ -493,6 +527,9 @@ export default {
     if (url.pathname === '/health')
       return json({ status: 'ok', onlineProtocol: ONLINE_PROTOCOL_VERSION });
     if (request.method === 'POST' && url.pathname === '/v1/rooms') {
+      if (env.ONLINE_ENABLED === 'false') return json({ error: { code: 'online_disabled' } }, 503);
+      if (!consumeSourceRate(sourceIdentity(request), 'create', 5, 60_000))
+        return json({ error: { code: 'online_rate_limited' } }, 429);
       const input = validateRoomCreateRequest(await request.json());
       if (!input.ok) return json({ error: input.error }, 400);
       const roomCode = createRoomCode();
@@ -510,10 +547,20 @@ export default {
       return json({ roomCode, seatToken, ruleset: input.value.ruleset }, 201);
     }
     const match = url.pathname.match(/^\/v1\/rooms\/([A-Z2-9]{8})(?:\/(join|socket))?$/);
-    if (!match) return new Response('Not found', { status: 404 });
+    if (!match) {
+      if (!consumeSourceRate(sourceIdentity(request), 'invalid', 10, 60_000))
+        return json({ error: { code: 'online_rate_limited' } }, 429);
+      return new Response('Not found', { status: 404 });
+    }
     const stub = env.ROOM.get(env.ROOM.idFromName(match[1]));
-    if (!match[2] && request.method === 'GET') return stub.fetch('https://room.internal/inspect');
+    if (!match[2] && request.method === 'GET') {
+      if (!consumeSourceRate(sourceIdentity(request), 'lookup', 20, 60_000))
+        return json({ error: { code: 'online_rate_limited' } }, 429);
+      return stub.fetch('https://room.internal/inspect');
+    }
     if (match[2] && request.method === 'POST') {
+      if (!consumeSourceRate(sourceIdentity(request), 'join', 20, 60_000))
+        return json({ error: { code: 'online_rate_limited' } }, 429);
       const joined = validateRoomJoinRequest(await request.json());
       if (!joined.ok) return json({ error: joined.error }, 400);
       const seatToken = createSeatToken();
@@ -570,6 +617,31 @@ function closeProtocol(socket, code) {
 function messageText(data) {
   if (typeof data === 'string') return data;
   return new TextDecoder().decode(data);
+}
+
+function messageBytes(data) {
+  return typeof data === 'string' ? new TextEncoder().encode(data).byteLength : data.byteLength;
+}
+
+function sourceIdentity(request) {
+  return (
+    request.headers.get('x-greedy-sweeper-test-source') ??
+    request.headers.get('cf-connecting-ip') ??
+    crypto.randomUUID()
+  );
+}
+
+function consumeSourceRate(source, category, limit, windowMs) {
+  const key = `${category}:${source}`;
+  const now = Date.now();
+  const bucket = sourceBuckets.get(key);
+  if (!bucket || now - bucket.startedAt >= windowMs) {
+    sourceBuckets.set(key, { startedAt: now, count: 1 });
+    return true;
+  }
+  if (bucket.count >= limit) return false;
+  bucket.count += 1;
+  return true;
 }
 
 function earliestDeadline(...deadlines) {

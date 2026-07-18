@@ -17,6 +17,25 @@ describe('room worker foundation', () => {
     expect((await SELF.fetch('https://worker.test/rooms')).status).toBe(404);
   });
 
+  it('rate-limits new room creation per explicit source before allocating another room', async () => {
+    const headers = { 'x-greedy-sweeper-test-source': `create-${crypto.randomUUID()}` };
+    for (let index = 0; index < 5; index += 1) {
+      const response = await SELF.fetch('https://worker.test/v1/rooms', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ ruleset: 'classic-v1' }),
+      });
+      expect(response.status).toBe(201);
+    }
+    const limited = await SELF.fetch('https://worker.test/v1/rooms', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ ruleset: 'classic-v1' }),
+    });
+    expect(limited.status).toBe(429);
+    expect(await limited.json()).toEqual({ error: { code: 'online_rate_limited' } });
+  });
+
   it('initializes SQLite storage and retains it after official runtime eviction', async () => {
     const stub = env.ROOM.get(env.ROOM.idFromName('foundation-eviction'));
     const first = await stub.fetch('https://room.test/foundation');
