@@ -2,6 +2,12 @@
 
 Status: **NOT AUTHORIZED — no production operation has been performed.**
 
+## Accepted Free beta exception
+
+The user has authorized a public Free beta through the existing GitHub Pages site and existing `workers.dev` Worker. This does not authorize Workers Paid, a production custom domain, DNS changes, Cloudflare Pages migration, or repository privatization. The focused release and rollback requirements are defined in `phase-6c-free-beta-release-addendum.md`.
+
+The repository remains public while GitHub Free Pages is active. Cloudflare Pages Free migration and repository privatization are deferred until the domain task signs off Cloudflare DNS readiness and the replacement deployment has passed acceptance.
+
 ## Proven before production
 
 - The isolated Preview Worker is `greedy-sweeper-room-preview` at `workers.dev`; the current deployed version is recorded in the Phase 6C validation report.

@@ -147,3 +147,7 @@ DNS migration does not block Phase 6A or 6B. A dedicated task owns Cargo communi
 ## 15. Decision record
 
 The detailed rationale is recorded in `docs/adr/0001-*.md` through `docs/adr/0029-*.md`. Canonical product terminology is recorded in `CONTEXT.md`.
+
+## 16. Free beta and private-repository transition
+
+The first public beta remains on GitHub Free with a public repository and the existing GitHub Pages site, connected to the Free `workers.dev` Worker. Workers Paid, production custom-domain activation, and Cloudflare Pages are not beta prerequisites. After the domain-migration task signs off Cloudflare DNS readiness, the web app will migrate to Cloudflare Pages Free; the repository becomes private only after that deployment and rollback path are accepted. See `docs/adr/0030-defer-private-repository-until-cloudflare-pages-cutover.md`.
