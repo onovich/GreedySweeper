@@ -2,6 +2,7 @@ import {
   ONLINE_PROTOCOL_VERSION,
   ONLINE_MESSAGE_MAX_BYTES,
   canonicalCommitmentPayload,
+  validateClientMessage,
   validateRoomCreateRequest,
   validateRoomJoinRequest,
 } from '@greedy-sweeper/online-protocol';
@@ -163,19 +164,18 @@ export class RoomDurableObject {
   }
 
   async authenticateSocket(socket, data) {
+    if (messageBytes(data) > ONLINE_MESSAGE_MAX_BYTES)
+      return closeProtocol(socket, 'online_oversize');
     let message;
     try {
       message = JSON.parse(messageText(data));
     } catch {
       return closeProtocol(socket, 'online_malformed');
     }
-    if (
-      message?.version !== ONLINE_PROTOCOL_VERSION ||
-      message?.type !== 'authenticate' ||
-      typeof message?.payload?.seatToken !== 'string'
-    )
-      return closeProtocol(socket, 'online_malformed');
-    const digestValue = await digest(message.payload.seatToken);
+    const validated = validateClientMessage(message);
+    if (!validated.ok || validated.value.type !== 'authenticate')
+      return closeProtocol(socket, validated.error?.code ?? 'online_malformed');
+    const digestValue = await digest(validated.value.payload.seatToken);
     const room = Array.from(
       this.state.storage.sql.exec(
         'SELECT ruleset, lifecycle, creator_digest, invitee_digest FROM room_metadata WHERE id = 1',
@@ -296,15 +296,19 @@ export class RoomDurableObject {
     } catch {
       return closeProtocol(socket, 'online_malformed');
     }
-    if (message?.version !== ONLINE_PROTOCOL_VERSION || message?.type !== 'submit_command')
-      return closeProtocol(socket, 'online_malformed');
-    const result = await this.acceptCommand(socket.deserializeAttachment().seat, message.payload);
+    const validated = validateClientMessage(message);
+    if (!validated.ok || validated.value.type !== 'submit_command')
+      return closeProtocol(socket, validated.error?.code ?? 'online_malformed');
+    const result = await this.acceptCommand(
+      socket.deserializeAttachment().seat,
+      validated.value.payload,
+    );
     if (result.error)
       return socket.send(
         JSON.stringify(
           envelope('command_rejected', {
-            commandId: message.payload?.commandId ?? 'invalid',
-            sequence: message.payload?.sequence ?? -1,
+            commandId: validated.value.payload.commandId,
+            sequence: validated.value.payload.sequence,
             error: result.error,
           }),
         ),

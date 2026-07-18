@@ -36,6 +36,29 @@ describe('room worker foundation', () => {
     expect(await limited.json()).toEqual({ error: { code: 'online_rate_limited' } });
   });
 
+  it('capacity target creates and joins 100 isolated rooms without cross-room collisions', async () => {
+    const created = await Promise.all(
+      Array.from({ length: 100 }, () =>
+        SELF.fetch('https://worker.test/v1/rooms', {
+          method: 'POST',
+          body: JSON.stringify({ ruleset: 'classic-v1' }),
+        }),
+      ),
+    );
+    expect(created.every((response) => response.status === 201)).toBe(true);
+    const rooms = await Promise.all(created.map((response) => response.json()));
+    expect(new Set(rooms.map((room) => room.roomCode)).size).toBe(100);
+    const joined = await Promise.all(
+      rooms.map((room) =>
+        SELF.fetch(`https://worker.test/v1/rooms/${room.roomCode}/join`, {
+          method: 'POST',
+          body: JSON.stringify({ rulesetAccepted: true }),
+        }),
+      ),
+    );
+    expect(joined.every((response) => response.status === 201)).toBe(true);
+  }, 20_000);
+
   it('initializes SQLite storage and retains it after official runtime eviction', async () => {
     const stub = env.ROOM.get(env.ROOM.idFromName('foundation-eviction'));
     const first = await stub.fetch('https://room.test/foundation');
