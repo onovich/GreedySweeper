@@ -61,7 +61,7 @@ export function validateRoomInspectResponse(value) {
     return fail('online_unknown_field');
   return ROOM_CODE_PATTERN.test(value.roomCode) &&
     Object.values(ONLINE_RULESETS).includes(value.ruleset) &&
-    ['setup', 'active', 'terminal'].includes(value.lifecycle)
+    ['setup', 'active', 'paused', 'terminal', 'abandoned'].includes(value.lifecycle)
     ? ok(value)
     : fail('online_malformed');
 }
