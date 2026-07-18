@@ -2,6 +2,10 @@
 
 Status: **NOT AUTHORIZED — no production operation has been performed.**
 
+## Current Free Beta release
+
+The authorized Free beta is live through the existing GitHub Pages site and existing `workers.dev` Worker. Pages release and independent external smoke evidence are recorded in `phase-6c-validation-report.md`. This does not authorize Workers Paid, a production custom domain, DNS changes, Cloudflare Pages migration, or repository privatization.
+
 ## Accepted Free beta exception
 
 The user has authorized a public Free beta through the existing GitHub Pages site and existing `workers.dev` Worker. This does not authorize Workers Paid, a production custom domain, DNS changes, Cloudflare Pages migration, or repository privatization. The focused release and rollback requirements are defined in `phase-6c-free-beta-release-addendum.md`.
