@@ -174,7 +174,11 @@ class SocketClient {
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
         this.waiters = this.waiters.filter((waiter) => waiter.resolve !== resolve);
-        reject(new Error(`WebSocket ${type} message timed out`));
+        reject(
+          new Error(
+            `WebSocket ${type} message timed out (queued: ${this.messages.map((message) => message.type).join(',') || 'none'})`,
+          ),
+        );
       }, MESSAGE_TIMEOUT_MS);
       this.waiters.push({ type, predicate, resolve, reject, timeout });
     });
