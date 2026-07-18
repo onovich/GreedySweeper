@@ -18,7 +18,6 @@ const ROOM_ALPHABET = 'ABCDEFGHJKMNPQRSTVWXYZ23456789';
 export class RoomDurableObject {
   constructor(state) {
     this.state = state;
-    this.sockets = new Set();
   }
 
   initialize() {
@@ -30,6 +29,9 @@ export class RoomDurableObject {
     );
     this.state.storage.sql.exec(
       'CREATE TABLE IF NOT EXISTS room_authority (id INTEGER PRIMARY KEY, sequence INTEGER NOT NULL, descriptor_json TEXT NOT NULL, state_json TEXT NOT NULL, commands_json TEXT NOT NULL)',
+    );
+    this.state.storage.sql.exec(
+      'CREATE TABLE IF NOT EXISTS room_sessions (seat TEXT PRIMARY KEY, session_epoch INTEGER NOT NULL, connected_at INTEGER NOT NULL)',
     );
   }
 
@@ -124,17 +126,14 @@ export class RoomDurableObject {
       return new Response('Expected WebSocket', { status: 426 });
     const pair = new WebSocketPair();
     const [client, server] = Object.values(pair);
-    server.accept();
-    server.addEventListener('message', (event) => {
-      void this.handleSocketMessage(server, event);
-    });
+    this.state.acceptWebSocket(server);
     return new Response(null, { status: 101, webSocket: client });
   }
 
-  async authenticateSocket(socket, event) {
+  async authenticateSocket(socket, data) {
     let message;
     try {
-      message = JSON.parse(event.data);
+      message = JSON.parse(messageText(data));
     } catch {
       return closeProtocol(socket, 'online_malformed');
     }
@@ -163,9 +162,27 @@ export class RoomDurableObject {
           ? 'invitee'
           : null;
     if (!seat) return closeProtocol(socket, 'online_unauthorized_seat');
-    socket.serializeAttachment({ seat });
-    this.sockets.add(socket);
-    socket.addEventListener('close', () => this.sockets.delete(socket));
+    const session = await this.state.storage.transaction(async () => {
+      this.state.storage.sql.exec(
+        'INSERT INTO room_sessions (seat, session_epoch, connected_at) VALUES (?, 1, ?) ON CONFLICT(seat) DO UPDATE SET session_epoch = session_epoch + 1, connected_at = excluded.connected_at',
+        seat,
+        Date.now(),
+      );
+      return Array.from(
+        this.state.storage.sql.exec('SELECT session_epoch FROM room_sessions WHERE seat = ?', seat),
+      )[0];
+    });
+    const attachment = {
+      seat,
+      sessionEpoch: session.session_epoch,
+      protocolVersion: ONLINE_PROTOCOL_VERSION,
+    };
+    socket.serializeAttachment(attachment);
+    for (const peer of this.connectedSockets()) {
+      if (peer === socket) continue;
+      const peerAttachment = peer.deserializeAttachment();
+      if (peerAttachment?.seat === seat) peer.close(1008, 'seat_replaced');
+    }
     socket.send(JSON.stringify(envelope('authenticated', { seat })));
     socket.send(
       JSON.stringify(
@@ -184,11 +201,18 @@ export class RoomDurableObject {
     );
   }
 
-  async handleSocketMessage(socket, event) {
-    if (!socket.deserializeAttachment()) return this.authenticateSocket(socket, event);
+  async webSocketMessage(socket, message) {
+    this.initialize();
+    return this.handleSocketMessage(socket, message);
+  }
+
+  webSocketClose() {}
+
+  async handleSocketMessage(socket, data) {
+    if (!socket.deserializeAttachment()) return this.authenticateSocket(socket, data);
     let message;
     try {
-      message = JSON.parse(event.data);
+      message = JSON.parse(messageText(data));
     } catch {
       return closeProtocol(socket, 'online_malformed');
     }
@@ -208,7 +232,7 @@ export class RoomDurableObject {
     const snapshot = JSON.stringify(
       envelope('snapshot', { snapshot: projectState(result.state, result.sequence) }),
     );
-    for (const peer of this.sockets) peer.send(snapshot);
+    for (const peer of this.connectedSockets()) peer.send(snapshot);
     socket.send(JSON.stringify(envelope('command_accepted', result.accepted)));
     if (result.state.gameOver) {
       const proof = await this.state.storage.get('terminal-proof');
@@ -217,7 +241,7 @@ export class RoomDurableObject {
           'SELECT commitment, opening_player FROM room_match WHERE id = 1',
         ),
       )[0];
-      for (const peer of this.sockets) {
+      for (const peer of this.connectedSockets()) {
         peer.send(JSON.stringify(envelope('match_terminal', { result: 'complete' })));
         peer.send(
           JSON.stringify(
@@ -274,6 +298,10 @@ export class RoomDurableObject {
       );
       return { accepted, state: transition.state, sequence: row.sequence + 1 };
     });
+  }
+
+  connectedSockets() {
+    return this.state.getWebSockets().filter((socket) => socket.deserializeAttachment()?.seat);
   }
 }
 
@@ -355,6 +383,11 @@ function envelope(type, payload) {
 function closeProtocol(socket, code) {
   socket.send(JSON.stringify(envelope('protocol_error', { error: code })));
   socket.close(1008, code);
+}
+
+function messageText(data) {
+  if (typeof data === 'string') return data;
+  return new TextDecoder().decode(data);
 }
 
 function projectState(state, sequence) {

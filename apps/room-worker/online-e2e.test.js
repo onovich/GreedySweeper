@@ -1,4 +1,4 @@
-import { SELF, env, reset, runInDurableObject } from 'cloudflare:test';
+import { SELF, env, evictDurableObject, reset, runInDurableObject } from 'cloudflare:test';
 import { afterEach, describe, expect, it } from 'vitest';
 
 const VERSION = '1';
@@ -46,24 +46,27 @@ describe('two-client Workers-runtime online e2e', () => {
       });
       await expectRejected(otherClient, 'online_wrong_turn');
 
-      let sequence = 1;
-      for (const mine of mines) {
-        const current = await currentSeat(room.roomCode);
-        const client = current === 'creator' ? creator : invitee;
+      for (let attempt = 0; attempt < mines.length; attempt += 1) {
+        const turn = await nextFlagTurn(room.roomCode);
+        if (turn.gameOver) break;
+        const client = turn.seat === 'creator' ? creator : invitee;
         client.send('submit_command', {
-          commandId: `finish-${sequence}`,
-          sequence,
+          commandId: `finish-${turn.sequence}-${attempt}`,
+          sequence: turn.sequence,
           action: {
             type: 'flag',
-            row: mine.row,
-            column: mine.column,
-            player: current === 'creator' ? 'human' : 'ai',
+            row: turn.mine.row,
+            column: turn.mine.column,
+            player: turn.seat === 'creator' ? 'human' : 'ai',
           },
         });
-        await client.waitFor('command_accepted');
-        sequence += 1;
+        await client.waitFor(
+          'command_accepted',
+          (message) => message.payload.commandId === `finish-${turn.sequence}-${attempt}`,
+        );
       }
 
+      expect(await gameIsOver(room.roomCode)).toBe(true);
       await creator.waitFor('match_terminal');
       await invitee.waitFor('match_terminal');
       const creatorProof = await creator.waitFor('terminal_proof');
@@ -74,6 +77,57 @@ describe('two-client Workers-runtime online e2e', () => {
       invitee.close();
     }, 20_000);
   }
+
+  it('rehydrates authenticated socket attachments after hibernation and broadcasts from the new instance', async () => {
+    const room = await createRoom('classic-v1');
+    const creator = await connect(room.roomCode, room.creatorToken);
+    const invitee = await connect(room.roomCode, room.inviteeToken);
+    const creatorSnapshot = await creator.waitFor('snapshot');
+    await invitee.waitFor('snapshot');
+    const stub = env.ROOM.get(env.ROOM.idFromName(room.roomCode));
+    await evictDurableObject(stub, { webSockets: 'hibernate' });
+
+    const mines = await roomMineCoordinates(room.roomCode);
+    const mineKeys = new Set(mines.map((mine) => `${mine.row}:${mine.column}`));
+    const seat = creatorSnapshot.payload.snapshot.currentSeat;
+    const client = seat === 'creator' ? creator : invitee;
+    client.send('submit_command', {
+      commandId: 'after-hibernation',
+      sequence: 0,
+      action: {
+        type: 'reveal',
+        ...firstSafeCoordinate(mineKeys),
+        player: seat === 'creator' ? 'human' : 'ai',
+      },
+    });
+    await client.waitFor('command_accepted');
+    await creator.waitFor('snapshot', (message) => message.payload.snapshot.sequence === 1);
+    await invitee.waitFor('snapshot', (message) => message.payload.snapshot.sequence === 1);
+    creator.close();
+    invitee.close();
+  }, 20_000);
+
+  it('replaces an older seat connection with a newer persisted session epoch', async () => {
+    const room = await createRoom('classic-v1');
+    const olderCreator = await connect(room.roomCode, room.creatorToken);
+    await olderCreator.waitFor('snapshot');
+    const newerCreator = await connect(room.roomCode, room.creatorToken);
+    await newerCreator.waitFor('snapshot');
+    await expect(olderCreator.waitForClose()).resolves.toMatchObject({
+      code: 1008,
+      reason: 'seat_replaced',
+    });
+    const stub = env.ROOM.get(env.ROOM.idFromName(room.roomCode));
+    const epoch = await runInDurableObject(
+      stub,
+      async (_instance, state) =>
+        Array.from(
+          state.storage.sql.exec("SELECT session_epoch FROM room_sessions WHERE seat = 'creator'"),
+        )[0].session_epoch,
+    );
+    expect(epoch).toBe(2);
+    newerCreator.close();
+  });
 });
 
 async function createRoom(ruleset) {
@@ -112,6 +166,8 @@ async function connect(roomCode, seatToken) {
 function messageClient(socket) {
   const messages = [];
   const waiters = [];
+  const closes = [];
+  const closeWaiters = [];
   socket.addEventListener('message', (event) => {
     const message = JSON.parse(event.data);
     messages.push(message);
@@ -120,12 +176,21 @@ function messageClient(socket) {
     );
     if (index >= 0) waiters.splice(index, 1)[0].resolve(message);
   });
+  socket.addEventListener('close', (event) => {
+    closes.push(event);
+    const resolve = closeWaiters.shift();
+    if (resolve) resolve(event);
+  });
   return {
     send(type, payload) {
       socket.send(JSON.stringify({ version: VERSION, type, payload }));
     },
     close() {
       socket.close();
+    },
+    waitForClose() {
+      if (closes.length > 0) return Promise.resolve(closes.shift());
+      return new Promise((resolve) => closeWaiters.push(resolve));
     },
     waitFor(type, predicate = () => true) {
       const index = messages.findIndex((message) => message.type === type && predicate(message));
@@ -168,13 +233,32 @@ async function roomMineCoordinates(roomCode) {
   });
 }
 
-async function currentSeat(roomCode) {
+async function nextFlagTurn(roomCode) {
+  const stub = env.ROOM.get(env.ROOM.idFromName(roomCode));
+  return runInDurableObject(stub, async (_instance, state) => {
+    const row = Array.from(
+      state.storage.sql.exec('SELECT sequence, state_json FROM room_authority WHERE id = 1'),
+    )[0];
+    const game = JSON.parse(row.state_json);
+    const mine = game.board
+      .flatMap((cells, row) => cells.map((cell, column) => ({ ...cell, row, column })))
+      .find((cell) => cell.isMine && !cell.isFlagged);
+    return {
+      seat: game.currentPlayer === 'human' ? 'creator' : 'invitee',
+      sequence: row.sequence,
+      mine,
+      gameOver: game.gameOver,
+    };
+  });
+}
+
+async function gameIsOver(roomCode) {
   const stub = env.ROOM.get(env.ROOM.idFromName(roomCode));
   return runInDurableObject(stub, async (_instance, state) => {
     const row = Array.from(
       state.storage.sql.exec('SELECT state_json FROM room_authority WHERE id = 1'),
     )[0];
-    return JSON.parse(row.state_json).currentPlayer === 'human' ? 'creator' : 'invitee';
+    return JSON.parse(row.state_json).gameOver;
   });
 }
 
