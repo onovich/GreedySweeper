@@ -14,6 +14,7 @@ import {
 } from '@greedy-sweeper/game-core/model/factories';
 
 const ROOM_ALPHABET = 'ABCDEFGHJKMNPQRSTVWXYZ23456789';
+const RECONNECT_GRACE_MS = 120_000;
 
 export class RoomDurableObject {
   constructor(state) {
@@ -32,6 +33,12 @@ export class RoomDurableObject {
     );
     this.state.storage.sql.exec(
       'CREATE TABLE IF NOT EXISTS room_sessions (seat TEXT PRIMARY KEY, session_epoch INTEGER NOT NULL, connected_at INTEGER NOT NULL)',
+    );
+    this.state.storage.sql.exec(
+      'CREATE TABLE IF NOT EXISTS room_seats (seat TEXT PRIMARY KEY, session_epoch INTEGER NOT NULL, connected_at INTEGER, reconnect_expires_at INTEGER)',
+    );
+    this.state.storage.sql.exec(
+      'INSERT OR IGNORE INTO room_seats (seat, session_epoch, connected_at) SELECT seat, session_epoch, connected_at FROM room_sessions',
     );
   }
 
@@ -164,12 +171,12 @@ export class RoomDurableObject {
     if (!seat) return closeProtocol(socket, 'online_unauthorized_seat');
     const session = await this.state.storage.transaction(async () => {
       this.state.storage.sql.exec(
-        'INSERT INTO room_sessions (seat, session_epoch, connected_at) VALUES (?, 1, ?) ON CONFLICT(seat) DO UPDATE SET session_epoch = session_epoch + 1, connected_at = excluded.connected_at',
+        'INSERT INTO room_seats (seat, session_epoch, connected_at, reconnect_expires_at) VALUES (?, 1, ?, NULL) ON CONFLICT(seat) DO UPDATE SET session_epoch = session_epoch + 1, connected_at = excluded.connected_at, reconnect_expires_at = NULL',
         seat,
         Date.now(),
       );
       return Array.from(
-        this.state.storage.sql.exec('SELECT session_epoch FROM room_sessions WHERE seat = ?', seat),
+        this.state.storage.sql.exec('SELECT session_epoch FROM room_seats WHERE seat = ?', seat),
       )[0];
     });
     const attachment = {
@@ -183,6 +190,7 @@ export class RoomDurableObject {
       const peerAttachment = peer.deserializeAttachment();
       if (peerAttachment?.seat === seat) peer.close(1008, 'seat_replaced');
     }
+    const resumed = await this.resumeIfReclaimed();
     socket.send(JSON.stringify(envelope('authenticated', { seat })));
     socket.send(
       JSON.stringify(
@@ -192,13 +200,14 @@ export class RoomDurableObject {
               ? projectState(JSON.parse(authority.state_json), authority.sequence)
               : {}),
             ruleset: room.ruleset,
-            lifecycle: room.lifecycle,
+            lifecycle: resumed ? 'active' : room.lifecycle,
             openingPlayer: match?.opening_player ?? null,
             commitment: match?.commitment ?? null,
           },
         }),
       ),
     );
+    if (resumed) this.broadcast(envelope('match_resumed', {}), socket);
   }
 
   async webSocketMessage(socket, message) {
@@ -206,7 +215,36 @@ export class RoomDurableObject {
     return this.handleSocketMessage(socket, message);
   }
 
-  webSocketClose() {}
+  async webSocketClose(socket) {
+    const attachment = socket.deserializeAttachment();
+    if (!attachment?.seat || !Number.isInteger(attachment.sessionEpoch)) return;
+    const paused = await this.state.storage.transaction(async () => {
+      const seat = Array.from(
+        this.state.storage.sql.exec(
+          'SELECT session_epoch FROM room_seats WHERE seat = ?',
+          attachment.seat,
+        ),
+      )[0];
+      const room = Array.from(
+        this.state.storage.sql.exec('SELECT lifecycle FROM room_metadata WHERE id = 1'),
+      )[0];
+      if (
+        !seat ||
+        seat.session_epoch !== attachment.sessionEpoch ||
+        !room ||
+        !['active', 'paused'].includes(room.lifecycle)
+      )
+        return false;
+      this.state.storage.sql.exec(
+        'UPDATE room_seats SET connected_at = NULL, reconnect_expires_at = ? WHERE seat = ?',
+        Date.now() + RECONNECT_GRACE_MS,
+        attachment.seat,
+      );
+      this.state.storage.sql.exec("UPDATE room_metadata SET lifecycle = 'paused' WHERE id = 1");
+      return room.lifecycle !== 'paused';
+    });
+    if (paused) this.broadcast(envelope('match_paused', {}));
+  }
 
   async handleSocketMessage(socket, data) {
     if (!socket.deserializeAttachment()) return this.authenticateSocket(socket, data);
@@ -259,6 +297,10 @@ export class RoomDurableObject {
 
   async acceptCommand(seat, command) {
     return this.state.storage.transaction(async () => {
+      const room = Array.from(
+        this.state.storage.sql.exec('SELECT lifecycle FROM room_metadata WHERE id = 1'),
+      )[0];
+      if (room?.lifecycle === 'paused') return { error: 'online_match_paused' };
       const row = Array.from(
         this.state.storage.sql.exec(
           'SELECT sequence, descriptor_json, state_json, commands_json FROM room_authority WHERE id = 1',
@@ -302,6 +344,40 @@ export class RoomDurableObject {
 
   connectedSockets() {
     return this.state.getWebSockets().filter((socket) => socket.deserializeAttachment()?.seat);
+  }
+
+  broadcast(message, except = null) {
+    const serialized = JSON.stringify(message);
+    for (const socket of this.connectedSockets()) {
+      if (socket !== except) socket.send(serialized);
+    }
+  }
+
+  async resumeIfReclaimed() {
+    const room = Array.from(
+      this.state.storage.sql.exec('SELECT lifecycle FROM room_metadata WHERE id = 1'),
+    )[0];
+    if (room?.lifecycle !== 'paused' || !this.areBothSeatsConnected()) return false;
+    await this.state.storage.transaction(async () => {
+      this.state.storage.sql.exec("UPDATE room_metadata SET lifecycle = 'active' WHERE id = 1");
+    });
+    return true;
+  }
+
+  areBothSeatsConnected() {
+    const activeSockets = new Map(
+      this.connectedSockets().map((socket) => {
+        const attachment = socket.deserializeAttachment();
+        return [attachment.seat, attachment.sessionEpoch];
+      }),
+    );
+    const seats = Array.from(
+      this.state.storage.sql.exec('SELECT seat, session_epoch FROM room_seats'),
+    );
+    return (
+      seats.length === 2 &&
+      seats.every((seat) => activeSockets.get(seat.seat) === seat.session_epoch)
+    );
   }
 }
 

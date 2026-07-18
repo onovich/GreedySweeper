@@ -122,11 +122,30 @@ describe('two-client Workers-runtime online e2e', () => {
       stub,
       async (_instance, state) =>
         Array.from(
-          state.storage.sql.exec("SELECT session_epoch FROM room_sessions WHERE seat = 'creator'"),
+          state.storage.sql.exec("SELECT session_epoch FROM room_seats WHERE seat = 'creator'"),
         )[0].session_epoch,
     );
     expect(epoch).toBe(2);
     newerCreator.close();
+  });
+
+  it('pauses a disconnected current seat and resumes its reclaimed connection with a fresh snapshot', async () => {
+    const room = await createRoom('classic-v1');
+    const creator = await connect(room.roomCode, room.creatorToken);
+    const invitee = await connect(room.roomCode, room.inviteeToken);
+    await creator.waitFor('snapshot');
+    await invitee.waitFor('snapshot');
+    creator.close();
+    await invitee.waitFor('match_paused');
+    expect(await roomLifecycle(room.roomCode)).toBe('paused');
+
+    const reclaimedCreator = await connect(room.roomCode, room.creatorToken);
+    const snapshot = await reclaimedCreator.waitFor('snapshot');
+    expect(snapshot.payload.snapshot).toMatchObject({ sequence: 0, lifecycle: 'active' });
+    await invitee.waitFor('match_resumed');
+    expect(await roomLifecycle(room.roomCode)).toBe('active');
+    reclaimedCreator.close();
+    invitee.close();
   });
 });
 
@@ -260,6 +279,11 @@ async function gameIsOver(roomCode) {
     )[0];
     return JSON.parse(row.state_json).gameOver;
   });
+}
+
+async function roomLifecycle(roomCode) {
+  const response = await SELF.fetch(`https://worker.test/v1/rooms/${roomCode}`);
+  return (await response.json()).lifecycle;
 }
 
 function firstSafeCoordinate(mineKeys) {
