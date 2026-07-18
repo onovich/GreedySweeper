@@ -5,7 +5,7 @@ import {
   createCell,
   createGreedInitialState,
   createInitialState,
-} from '../src/game/model/factories';
+} from '@greedy-sweeper/game-core/model/factories';
 
 describe('GameScreen', () => {
   afterEach(() => cleanup());

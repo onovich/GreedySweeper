@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { createSeededRandom, normalizeSeed, serializeSeed } from '../src/game/random/seeded-random';
+import {
+  createSeededRandom,
+  normalizeSeed,
+  serializeSeed,
+} from '@greedy-sweeper/game-core/random/seeded-random';
 
 describe('seeded random', () => {
   it('normalizes only canonical unsigned 32-bit seed values', () => {

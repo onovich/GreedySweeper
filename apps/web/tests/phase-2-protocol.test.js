@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { createChallengeDescriptor } from '../src/game/challenge/contracts';
-import { ACTION_TYPES, PLAYERS } from '../src/game/model/contracts';
+import { createChallengeDescriptor } from '@greedy-sweeper/game-core/challenge/contracts';
+import { ACTION_TYPES, PLAYERS } from '@greedy-sweeper/game-core/model/contracts';
 import {
   REPLAY_ERROR_CODES,
   createActionRecord,
   createReplay,
   isActionRecord,
-} from '../src/game/replay/contracts';
+} from '@greedy-sweeper/game-core/replay/contracts';
 
 describe('Phase 2 protocol contracts', () => {
   it('creates a serializable descriptor without leaking a board solution', () => {

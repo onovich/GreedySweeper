@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { estimateCandidateRisk } from '../src/game/ai/risk-estimator';
+import { estimateCandidateRisk } from '@greedy-sweeper/game-core/ai/risk-estimator';
 
 describe('AI public risk estimator', () => {
   it('derives risk from revealed numbers and flags only', () => {

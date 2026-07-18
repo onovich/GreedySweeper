@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getHiddenCandidates, selectCertainAction } from '../src/game/ai/candidates';
+import { getHiddenCandidates, selectCertainAction } from '@greedy-sweeper/game-core/ai/candidates';
 
 describe('AI candidates', () => {
   it('preserves the original scan order for certain moves and fallback candidates', () => {

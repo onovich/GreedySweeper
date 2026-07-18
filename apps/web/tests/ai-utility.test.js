@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { selectUtilityCandidate } from '../src/game/ai/utility';
+import { selectUtilityCandidate } from '@greedy-sweeper/game-core/ai/utility';
 
 const view = {
   rows: 2,

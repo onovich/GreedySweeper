@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { PLAYERS, createFlagAction, createRevealAction } from '../src/game/model/contracts';
-import { appendActionRecord, validateActionLog } from '../src/game/replay/action-log';
-import { REPLAY_ERROR_CODES } from '../src/game/replay/contracts';
+import {
+  PLAYERS,
+  createFlagAction,
+  createRevealAction,
+} from '@greedy-sweeper/game-core/model/contracts';
+import { appendActionRecord, validateActionLog } from '@greedy-sweeper/game-core/replay/action-log';
+import { REPLAY_ERROR_CODES } from '@greedy-sweeper/game-core/replay/contracts';
 
 describe('versioned action log', () => {
   it('appends serializable human and AI commands in a contiguous order', () => {

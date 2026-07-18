@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createDailyChallenge, getUtcDay } from '../src/game/challenge/daily';
+import { createDailyChallenge, getUtcDay } from '@greedy-sweeper/game-core/challenge/daily';
 
 describe('daily challenge', () => {
   it('derives the same seed for every instant in one UTC day', () => {

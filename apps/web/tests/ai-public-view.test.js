@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { createAiPublicView } from '../src/game/ai/public-view';
-import { createCell, createInitialState } from '../src/game/model/factories';
+import { createAiPublicView } from '@greedy-sweeper/game-core/ai/public-view';
+import { createCell, createInitialState } from '@greedy-sweeper/game-core/model/factories';
 
 const config = { rows: 2, columns: 2, totalMines: 1 };
 

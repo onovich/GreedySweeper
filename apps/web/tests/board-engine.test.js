@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { createBoard } from '../src/game/engine/board';
-import { getNeighborCoordinates } from '../src/game/engine/coordinates';
-import { revealFlood } from '../src/game/engine/flood-reveal';
-import { createCell } from '../src/game/model/factories';
+import { createBoard } from '@greedy-sweeper/game-core/engine/board';
+import { getNeighborCoordinates } from '@greedy-sweeper/game-core/engine/coordinates';
+import { revealFlood } from '@greedy-sweeper/game-core/engine/flood-reveal';
+import { createCell } from '@greedy-sweeper/game-core/model/factories';
 
 const smallBoard = { rows: 3, columns: 3, totalMines: 1 };
 

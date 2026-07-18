@@ -1,8 +1,8 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useGameController } from '../src/application/useGameController';
-import { encodeChallengeCode } from '../src/game/challenge/code';
-import { createSeededRng } from '../src/game/model/factories';
+import { encodeChallengeCode } from '@greedy-sweeper/game-core/challenge/code';
+import { createSeededRng } from '@greedy-sweeper/game-core/model/factories';
 import { createProfile } from '../src/progression/profile';
 
 const config = { rows: 2, columns: 2, totalMines: 2 };

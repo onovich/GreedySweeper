@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { CHALLENGE_ERROR_CODES, createChallengeDescriptor } from '../src/game/challenge/contracts';
-import { decodeChallengeCode, encodeChallengeCode } from '../src/game/challenge/code';
+import {
+  CHALLENGE_ERROR_CODES,
+  createChallengeDescriptor,
+} from '@greedy-sweeper/game-core/challenge/contracts';
+import { decodeChallengeCode, encodeChallengeCode } from '@greedy-sweeper/game-core/challenge/code';
 
 describe('challenge code', () => {
   const descriptor = createChallengeDescriptor({

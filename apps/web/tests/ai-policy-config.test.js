@@ -5,7 +5,7 @@ import {
   DEFAULT_AI_POLICY,
   createAiPolicy,
   validateAiPolicy,
-} from '../src/game/ai/policy-config';
+} from '@greedy-sweeper/game-core/ai/policy-config';
 
 describe('AI policy configuration', () => {
   it('defaults to the compatible normal balanced policy', () => {

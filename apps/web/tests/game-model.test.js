@@ -6,8 +6,12 @@ import {
   createFlagAction,
   createResult,
   isGameAction,
-} from '../src/game/model/contracts';
-import { createCell, createInitialState, createSeededRng } from '../src/game/model/factories';
+} from '@greedy-sweeper/game-core/model/contracts';
+import {
+  createCell,
+  createInitialState,
+  createSeededRng,
+} from '@greedy-sweeper/game-core/model/factories';
 
 describe('game model contracts', () => {
   it('creates serializable cells and initial state with the human first', () => {

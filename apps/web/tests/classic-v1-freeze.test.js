@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { BOARD_CONFIG, SCORE_CONFIG } from '../src/game/config/game-config';
-import { applyAction } from '../src/game/engine/transition';
-import { createRevealAction, PLAYERS } from '../src/game/model/contracts';
-import { createCell, createInitialState } from '../src/game/model/factories';
+import { BOARD_CONFIG, SCORE_CONFIG } from '@greedy-sweeper/game-core/config/game-config';
+import { applyAction } from '@greedy-sweeper/game-core/engine/transition';
+import { createRevealAction, PLAYERS } from '@greedy-sweeper/game-core/model/contracts';
+import { createCell, createInitialState } from '@greedy-sweeper/game-core/model/factories';
 
 describe('Classic v1 freeze', () => {
   it('retains the published state shape and safe-reveal settlement', () => {

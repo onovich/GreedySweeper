@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { SCORE_CONFIG } from '../src/game/config/game-config';
-import { applyAction } from '../src/game/engine/transition';
+import { SCORE_CONFIG } from '@greedy-sweeper/game-core/config/game-config';
+import { applyAction } from '@greedy-sweeper/game-core/engine/transition';
 import {
   PLAYERS,
   createBankAction,
   createFlagAction,
   createRevealAction,
-} from '../src/game/model/contracts';
-import { createCell, createGreedInitialState } from '../src/game/model/factories';
+} from '@greedy-sweeper/game-core/model/contracts';
+import { createCell, createGreedInitialState } from '@greedy-sweeper/game-core/model/factories';
 
 const config = { rows: 2, columns: 2, totalMines: 1 };
 const rules = { rulesVersion: '2', mode: 'greed' };

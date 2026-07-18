@@ -3,8 +3,8 @@ import {
   CHALLENGE_ERROR_CODES,
   createChallengeDescriptor,
   validateChallengeDescriptor,
-} from '../src/game/challenge/contracts';
-import { createChallengeBoard } from '../src/game/challenge/board';
+} from '@greedy-sweeper/game-core/challenge/contracts';
+import { createChallengeBoard } from '@greedy-sweeper/game-core/challenge/board';
 
 const board = { rows: 4, columns: 4, totalMines: 3 };
 

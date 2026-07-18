@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createCell, createInitialState } from '../src/game/model/factories';
+import { createCell, createInitialState } from '@greedy-sweeper/game-core/model/factories';
 import { GameScreen } from '../src/ui/screens/GameScreen';
 
 function renderPlayableScreen() {

@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { createChallengeBoard } from '../src/game/challenge/board';
-import { PLAYERS, createFlagAction } from '../src/game/model/contracts';
-import { appendActionRecord } from '../src/game/replay/action-log';
-import { createReplaySummary, validateReplayIntegrity } from '../src/game/replay/integrity';
-import { replayGame } from '../src/game/replay/replay-engine';
-import { REPLAY_ERROR_CODES } from '../src/game/replay/contracts';
+import { createChallengeBoard } from '@greedy-sweeper/game-core/challenge/board';
+import { PLAYERS, createFlagAction } from '@greedy-sweeper/game-core/model/contracts';
+import { appendActionRecord } from '@greedy-sweeper/game-core/replay/action-log';
+import {
+  createReplaySummary,
+  validateReplayIntegrity,
+} from '@greedy-sweeper/game-core/replay/integrity';
+import { replayGame } from '@greedy-sweeper/game-core/replay/replay-engine';
+import { REPLAY_ERROR_CODES } from '@greedy-sweeper/game-core/replay/contracts';
 
 const descriptor = {
   rulesVersion: '1',

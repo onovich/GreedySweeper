@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { selectAiAction } from '../src/game/ai/select-action';
-import { ACTION_TYPES, PLAYERS } from '../src/game/model/contracts';
+import { selectAiAction } from '@greedy-sweeper/game-core/ai/select-action';
+import { ACTION_TYPES, PLAYERS } from '@greedy-sweeper/game-core/model/contracts';
 import {
   createCell,
   createGreedInitialState,
   createInitialState,
-} from '../src/game/model/factories';
+} from '@greedy-sweeper/game-core/model/factories';
 
 const config = { rows: 2, columns: 2, totalMines: 1 };
 
