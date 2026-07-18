@@ -76,6 +76,11 @@ export function OnlineRoomPanel({ online }) {
           This tab was replaced by a newer connection for the same seat.
         </p>
       )}
+      {online.status === 'abandoned' && (
+        <p role="alert" className="mt-2 text-xs text-amber-200">
+          This room expired without a winner. It cannot contribute a progression result.
+        </p>
+      )}
       {online.error && (
         <p role="alert" className="mt-2 text-xs text-red-300">
           Online error: {online.error}

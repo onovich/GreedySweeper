@@ -343,6 +343,7 @@ export class RoomDurableObject {
         this.state.storage.sql.exec('SELECT lifecycle FROM room_metadata WHERE id = 1'),
       )[0];
       if (room?.lifecycle === 'paused') return { error: 'online_match_paused' };
+      if (room?.lifecycle !== 'active') return { error: 'online_match_unavailable' };
       const row = Array.from(
         this.state.storage.sql.exec(
           'SELECT sequence, descriptor_json, state_json, commands_json FROM room_authority WHERE id = 1',

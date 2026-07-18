@@ -51,9 +51,16 @@ export function useOnlineRoomController() {
         }
         if (message.type === 'snapshot') {
           setSnapshot(message.payload.snapshot);
-          setStatus(message.payload.snapshot.lifecycle === 'paused' ? 'paused' : 'connected');
+          setStatus(
+            message.payload.snapshot.lifecycle === 'abandoned'
+              ? 'abandoned'
+              : message.payload.snapshot.lifecycle === 'paused'
+                ? 'paused'
+                : 'connected',
+          );
           const pendingCommand = pendingCommandRef.current;
-          if (pendingCommand) socket.send(JSON.stringify(pendingCommand));
+          if (pendingCommand && message.payload.snapshot.lifecycle === 'active')
+            socket.send(JSON.stringify(pendingCommand));
         }
         if (message.type === 'command_accepted') {
           if (pendingCommandRef.current?.payload.commandId === message.payload.commandId) {
