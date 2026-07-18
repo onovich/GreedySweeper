@@ -40,6 +40,7 @@ async function completeRoom(ruleset) {
     let snapshot = creator.snapshot;
     for (let count = 0; !snapshot.gameOver; count += 1) {
       if (count >= MAX_COMMANDS) throw new Error('Room did not complete');
+      if (count > 0 && count % 20 === 0) await delay(10_100);
       const target = snapshot.board.find((cell) => cell.state === 'hidden');
       if (!target) throw new Error('Room has no legal reveal');
       const client = snapshot.currentSeat === 'creator' ? creator.client : invitee.client;
@@ -214,6 +215,10 @@ class SocketClient {
       waiter.reject(new Error(reason));
     }
   }
+}
+
+function delay(milliseconds) {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
 try {
