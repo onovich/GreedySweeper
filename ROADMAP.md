@@ -97,7 +97,7 @@ Exit criteria:
 
 ### Phase 6 - Online Rooms and Authoritative PvP
 
-Status: architecture accepted; Phases 6A and 6B accepted. Phase 6C local/Preview resilience is complete and the GitHub Pages + Workers Free public-beta release addendum is authorized. Workers Paid, Cloudflare Pages cutover, custom-domain activation, and repository privatization are deferred until domain readiness. Evidence: `docs/phase-6a-validation-report.md` and `docs/phase-6b-validation-report.md`. Decision brief: `docs/phase-6-online-architecture-decision-brief.md`. Phase 6C guide: `docs/phase-6c-resilience-production-release-goal-mode-execution-guide.md`; beta addendum: `docs/phase-6c-free-beta-release-addendum.md`.
+Status: architecture accepted; Phases 6A, 6B, and the Phase 6C GitHub Pages + Workers Free public beta are accepted. Workers Paid, Cloudflare Pages cutover, custom-domain activation, and repository privatization are deferred until domain readiness and fresh authorization. Evidence: `docs/phase-6a-validation-report.md`, `docs/phase-6b-validation-report.md`, and `docs/phase-6c-validation-report.md`. Decision brief: `docs/phase-6-online-architecture-decision-brief.md`. Phase 6C guide: `docs/phase-6c-resilience-production-release-goal-mode-execution-guide.md`; beta addendum: `docs/phase-6c-free-beta-release-addendum.md`.
 
 Player value: 支持房间邀请码、实时玩家对战、断线重连、观战和在线回放。
 

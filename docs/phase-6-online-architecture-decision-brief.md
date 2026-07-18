@@ -1,7 +1,7 @@
 # Phase 6 Online Architecture Decision Brief
 
 Date: 2026-07-17
-Status: Shared understanding confirmed; Phases 6A and 6B accepted and Phase 6C planning active
+Status: Phases 6A, 6B, and the Phase 6C Free beta accepted; Paid/custom-domain production deferred
 Scope: Greedy Sweeper private-room online MVP
 
 ## 1. Product boundary
