@@ -15,6 +15,9 @@ import {
 
 const ROOM_ALPHABET = 'ABCDEFGHJKMNPQRSTVWXYZ23456789';
 const RECONNECT_GRACE_MS = 120_000;
+const SETUP_EXPIRY_MS = 600_000;
+const INACTIVITY_EXPIRY_MS = 600_000;
+const TERMINAL_RETENTION_MS = 3_600_000;
 
 export class RoomDurableObject {
   constructor(state) {
@@ -38,7 +41,13 @@ export class RoomDurableObject {
       'CREATE TABLE IF NOT EXISTS room_seats (seat TEXT PRIMARY KEY, session_epoch INTEGER NOT NULL, connected_at INTEGER, reconnect_expires_at INTEGER)',
     );
     this.state.storage.sql.exec(
+      'CREATE TABLE IF NOT EXISTS room_lifecycle (id INTEGER PRIMARY KEY, state TEXT NOT NULL, next_deadline_at INTEGER, setup_expires_at INTEGER, inactive_expires_at INTEGER, terminal_delete_at INTEGER)',
+    );
+    this.state.storage.sql.exec(
       'INSERT OR IGNORE INTO room_seats (seat, session_epoch, connected_at) SELECT seat, session_epoch, connected_at FROM room_sessions',
+    );
+    this.state.storage.sql.exec(
+      'INSERT OR IGNORE INTO room_lifecycle (id, state) SELECT id, lifecycle FROM room_metadata',
     );
   }
 
@@ -64,6 +73,14 @@ export class RoomDurableObject {
       ruleset,
       creatorDigest,
     );
+    const deadline = Date.now() + SETUP_EXPIRY_MS;
+    this.state.storage.sql.exec(
+      'INSERT INTO room_lifecycle (id, state, next_deadline_at, setup_expires_at) VALUES (1, ?, ?, ?)',
+      'setup',
+      deadline,
+      deadline,
+    );
+    await this.state.storage.setAlarm(deadline);
     return json({ roomCode, ruleset, lifecycle: 'setup' }, 201);
   }
 
@@ -125,6 +142,7 @@ export class RoomDurableObject {
       '[]',
     );
     await this.state.storage.put('terminal-proof', { seed, salt });
+    await this.setLifecycleDeadline('active', Date.now() + INACTIVITY_EXPIRY_MS);
     return json({ ruleset: room.ruleset, lifecycle: 'active', openingPlayer, commitment });
   }
 
@@ -241,8 +259,23 @@ export class RoomDurableObject {
         attachment.seat,
       );
       this.state.storage.sql.exec("UPDATE room_metadata SET lifecycle = 'paused' WHERE id = 1");
+      const reconnect = Array.from(
+        this.state.storage.sql.exec(
+          'SELECT MIN(reconnect_expires_at) AS next_deadline_at FROM room_seats WHERE reconnect_expires_at IS NOT NULL',
+        ),
+      )[0];
+      const lifecycle = Array.from(
+        this.state.storage.sql.exec('SELECT inactive_expires_at FROM room_lifecycle WHERE id = 1'),
+      )[0];
+      const deadline = earliestDeadline(reconnect.next_deadline_at, lifecycle?.inactive_expires_at);
+      this.state.storage.sql.exec(
+        'UPDATE room_lifecycle SET state = ?, next_deadline_at = ? WHERE id = 1',
+        'paused',
+        deadline,
+      );
       return room.lifecycle !== 'paused';
     });
+    await this.scheduleLifecycleAlarm();
     if (paused) this.broadcast(envelope('match_paused', {}));
   }
 
@@ -296,7 +329,7 @@ export class RoomDurableObject {
   }
 
   async acceptCommand(seat, command) {
-    return this.state.storage.transaction(async () => {
+    const result = await this.state.storage.transaction(async () => {
       const room = Array.from(
         this.state.storage.sql.exec('SELECT lifecycle FROM room_metadata WHERE id = 1'),
       )[0];
@@ -338,8 +371,21 @@ export class RoomDurableObject {
         JSON.stringify(transition.state),
         JSON.stringify(commands),
       );
+      const deadline =
+        Date.now() + (transition.state.gameOver ? TERMINAL_RETENTION_MS : INACTIVITY_EXPIRY_MS);
+      this.state.storage.sql.exec(
+        'UPDATE room_lifecycle SET state = ?, next_deadline_at = ?, inactive_expires_at = ?, terminal_delete_at = ? WHERE id = 1',
+        transition.state.gameOver ? 'terminal' : 'active',
+        deadline,
+        deadline,
+        transition.state.gameOver ? deadline : null,
+      );
+      if (transition.state.gameOver)
+        this.state.storage.sql.exec("UPDATE room_metadata SET lifecycle = 'terminal' WHERE id = 1");
       return { accepted, state: transition.state, sequence: row.sequence + 1 };
     });
+    await this.scheduleLifecycleAlarm();
+    return result;
   }
 
   connectedSockets() {
@@ -360,8 +406,68 @@ export class RoomDurableObject {
     if (room?.lifecycle !== 'paused' || !this.areBothSeatsConnected()) return false;
     await this.state.storage.transaction(async () => {
       this.state.storage.sql.exec("UPDATE room_metadata SET lifecycle = 'active' WHERE id = 1");
+      const deadline = Date.now() + INACTIVITY_EXPIRY_MS;
+      this.state.storage.sql.exec(
+        'UPDATE room_lifecycle SET state = ?, next_deadline_at = ?, inactive_expires_at = ? WHERE id = 1',
+        'active',
+        deadline,
+        deadline,
+      );
     });
+    await this.scheduleLifecycleAlarm();
     return true;
+  }
+
+  async alarm() {
+    this.initialize();
+    const outcome = await this.state.storage.transaction(async () => {
+      const lifecycle = Array.from(
+        this.state.storage.sql.exec(
+          'SELECT state, next_deadline_at FROM room_lifecycle WHERE id = 1',
+        ),
+      )[0];
+      if (!lifecycle || lifecycle.next_deadline_at === null) return { deleted: false, next: null };
+      if (lifecycle.next_deadline_at > Date.now())
+        return { deleted: false, next: lifecycle.next_deadline_at };
+      if (['terminal', 'abandoned'].includes(lifecycle.state)) {
+        this.state.storage.sql.exec('DELETE FROM room_seats');
+        this.state.storage.sql.exec('DELETE FROM room_sessions');
+        this.state.storage.sql.exec('DELETE FROM room_authority');
+        this.state.storage.sql.exec('DELETE FROM room_match');
+        this.state.storage.sql.exec('DELETE FROM room_metadata');
+        this.state.storage.sql.exec('DELETE FROM room_lifecycle');
+        return { deleted: true, next: null };
+      }
+      const deletionDeadline = Date.now() + TERMINAL_RETENTION_MS;
+      this.state.storage.sql.exec("UPDATE room_metadata SET lifecycle = 'abandoned' WHERE id = 1");
+      this.state.storage.sql.exec(
+        'UPDATE room_lifecycle SET state = ?, next_deadline_at = ?, terminal_delete_at = ? WHERE id = 1',
+        'abandoned',
+        deletionDeadline,
+        deletionDeadline,
+      );
+      return { deleted: false, next: deletionDeadline };
+    });
+    if (outcome.deleted) await this.state.storage.delete('terminal-proof');
+    if (outcome.next !== null) await this.state.storage.setAlarm(outcome.next);
+  }
+
+  async setLifecycleDeadline(state, deadline) {
+    this.state.storage.sql.exec(
+      'UPDATE room_lifecycle SET state = ?, next_deadline_at = ?, inactive_expires_at = ? WHERE id = 1',
+      state,
+      deadline,
+      deadline,
+    );
+    await this.state.storage.setAlarm(deadline);
+  }
+
+  async scheduleLifecycleAlarm() {
+    const lifecycle = Array.from(
+      this.state.storage.sql.exec('SELECT next_deadline_at FROM room_lifecycle WHERE id = 1'),
+    )[0];
+    if (lifecycle?.next_deadline_at !== null && lifecycle?.next_deadline_at !== undefined)
+      await this.state.storage.setAlarm(lifecycle.next_deadline_at);
   }
 
   areBothSeatsConnected() {
@@ -464,6 +570,11 @@ function closeProtocol(socket, code) {
 function messageText(data) {
   if (typeof data === 'string') return data;
   return new TextDecoder().decode(data);
+}
+
+function earliestDeadline(...deadlines) {
+  const valid = deadlines.filter((deadline) => Number.isFinite(deadline));
+  return valid.length === 0 ? null : Math.min(...valid);
 }
 
 function projectState(state, sequence) {

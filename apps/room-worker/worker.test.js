@@ -1,4 +1,11 @@
-import { SELF, env, evictDurableObject, reset, runInDurableObject } from 'cloudflare:test';
+import {
+  SELF,
+  env,
+  evictDurableObject,
+  reset,
+  runDurableObjectAlarm,
+  runInDurableObject,
+} from 'cloudflare:test';
 import { afterEach, describe, expect, it } from 'vitest';
 
 afterEach(async () => reset());
@@ -19,6 +26,65 @@ describe('room worker foundation', () => {
 
     const reloaded = await stub.fetch('https://room.test/foundation');
     expect(await reloaded.json()).toEqual({ status: 'foundation', storage: 'sqlite' });
+  });
+
+  it('expires setup, abandons overdue rooms, and hard-deletes terminal retention data through alarms', async () => {
+    const created = await SELF.fetch('https://worker.test/v1/rooms', {
+      method: 'POST',
+      body: JSON.stringify({ ruleset: 'classic-v1' }),
+    });
+    const room = await created.json();
+    const stub = env.ROOM.get(env.ROOM.idFromName(room.roomCode));
+    expect(await runDurableObjectAlarm(stub)).toBe(true);
+    expect(
+      (await (await SELF.fetch(`https://worker.test/v1/rooms/${room.roomCode}`)).json()).lifecycle,
+    ).toBe('setup');
+    await runInDurableObject(stub, async (_instance, state) => {
+      state.storage.sql.exec('UPDATE room_lifecycle SET next_deadline_at = 0 WHERE id = 1');
+    });
+    expect(await runDurableObjectAlarm(stub)).toBe(true);
+    expect(
+      (await (await SELF.fetch(`https://worker.test/v1/rooms/${room.roomCode}`)).json()).lifecycle,
+    ).toBe('abandoned');
+
+    await runInDurableObject(stub, async (_instance, state) => {
+      state.storage.sql.exec(
+        "UPDATE room_lifecycle SET state = 'abandoned', next_deadline_at = 0 WHERE id = 1",
+      );
+    });
+    expect(await runDurableObjectAlarm(stub)).toBe(true);
+    expect((await SELF.fetch(`https://worker.test/v1/rooms/${room.roomCode}`)).status).toBe(404);
+  });
+
+  it('abandons active inactivity and reconnect-expiry deadlines without a winner', async () => {
+    const created = await SELF.fetch('https://worker.test/v1/rooms', {
+      method: 'POST',
+      body: JSON.stringify({ ruleset: 'greed-v2' }),
+    });
+    const room = await created.json();
+    await SELF.fetch(`https://worker.test/v1/rooms/${room.roomCode}/join`, {
+      method: 'POST',
+      body: JSON.stringify({ rulesetAccepted: true }),
+    });
+    const stub = env.ROOM.get(env.ROOM.idFromName(room.roomCode));
+    for (const state of ['active', 'paused']) {
+      await runInDurableObject(stub, async (_instance, durableState) => {
+        durableState.storage.sql.exec(
+          'UPDATE room_lifecycle SET state = ?, next_deadline_at = 0 WHERE id = 1',
+          state,
+        );
+      });
+      expect(await runDurableObjectAlarm(stub)).toBe(true);
+      const inspected = await SELF.fetch(`https://worker.test/v1/rooms/${room.roomCode}`);
+      expect((await inspected.json()).lifecycle).toBe('abandoned');
+      if (state === 'active') {
+        await runInDurableObject(stub, async (_instance, durableState) => {
+          durableState.storage.sql.exec(
+            "UPDATE room_metadata SET lifecycle = 'active' WHERE id = 1",
+          );
+        });
+      }
+    }
   });
 
   it('creates, inspects, and accepts one private-room invitee without exposing a token in lookup', async () => {
