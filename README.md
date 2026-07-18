@@ -53,7 +53,7 @@ Development proceeds in small playable phases, with architecture and validation 
 
 ## Deployment
 
-Online private rooms require an explicit `VITE_ONLINE_ENDPOINT` build-time value and an isolated Cloudflare Workers Preview. The local Worker and all protocol tests run without deployment; Preview deployment requires an authenticated Wrangler session and never uses this repository's Pages domain, production route, or DNS configuration.
+The public Free beta uses GitHub Pages at `https://blog.onovich.com/GreedySweeper/` and the isolated Free Worker at `https://greedy-sweeper-room-preview.onovich1110.workers.dev`. The Pages workflow injects that public, non-secret origin through `VITE_ONLINE_ENDPOINT`; `GREEDY_SWEEPER_FREE_BETA_ENDPOINT` may replace it as a repository variable. Local builds without `VITE_ONLINE_ENDPOINT` remain safely offline. The post-release GitHub-hosted `online:free-beta-smoke` checks the published UI artifact plus HTTPS/WSS Classic, Greed, and reconnect behavior without Cloudflare credentials. Paid Workers, custom domains, DNS, Cloudflare Pages, and repository privatization remain out of scope.
 
 ## Seeded challenges and replay
 

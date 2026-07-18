@@ -1,0 +1,39 @@
+name: Public Free Beta Smoke
+
+on:
+  workflow_run:
+    workflows: [Deploy to GitHub Pages]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: public-free-beta-smoke
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-latest
+    env:
+      PUBLIC_SITE_URL: ${{ vars.GREEDY_SWEEPER_FREE_BETA_SITE_URL || 'https://blog.onovich.com/GreedySweeper/' }}
+      PREVIEW_ENDPOINT: ${{ vars.GREEDY_SWEEPER_FREE_BETA_ENDPOINT || 'https://greedy-sweeper-room-preview.onovich1110.workers.dev' }}
+    steps:
+      - name: Checkout release revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Smoke public Pages UI and Free Worker
+        run: npm run online:free-beta-smoke

@@ -45,6 +45,10 @@ jobs:
           npm run workspace:check
           npm run arch:check
       - name: Build
+        env:
+          # Public, non-secret Free-beta origin. A repository variable can replace this
+          # value without changing source; a missing value still leaves local builds safe.
+          VITE_ONLINE_ENDPOINT: ${{ vars.GREEDY_SWEEPER_FREE_BETA_ENDPOINT || 'https://greedy-sweeper-room-preview.onovich1110.workers.dev' }}
         run: npm run build
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
