@@ -254,6 +254,21 @@ export function useGameController({
     },
     [progressionStorage],
   );
+  const registerVerifiedOnlineFact = useCallback(
+    (fact) => {
+      if (!progressionStorage || fact?.sessionSource !== 'online')
+        return { ok: false, error: { code: 'online_progression_unverified' } };
+      let added = false;
+      setProgressionProfile((current) => {
+        const appended = appendCompletedFacts(current, fact);
+        added = appended.added;
+        if (appended.added) progressionStorage.save(appended.profile);
+        return appended.profile;
+      });
+      return { ok: true, value: { added } };
+    },
+    [progressionStorage],
+  );
 
   useEffect(() => {
     if (
@@ -397,6 +412,7 @@ export function useGameController({
       unlocks: progressionProfile.unlocks,
       reset: resetProgression,
     },
+    registerVerifiedOnlineFact,
     replay: {
       isAvailable: Boolean(session.descriptor && session.actions.length),
       isReplaying,

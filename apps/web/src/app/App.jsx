@@ -10,7 +10,9 @@ export function App() {
     historyStorage: createBrowserHistoryStorage(),
     progressionStorage: createBrowserProgressionStorage(),
   });
-  const online = useOnlineRoomController();
+  const online = useOnlineRoomController({
+    onVerifiedResult: controller.registerVerifiedOnlineFact,
+  });
 
   return (
     <>

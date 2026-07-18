@@ -1,16 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { deriveVerifiedOnlineFact } from '../../progression/derive-online-fact';
 
 const endpoint = import.meta.env.VITE_ONLINE_ENDPOINT?.replace(/\/$/, '') ?? '';
 const tokenKey = (roomCode) => `greedy-sweeper:online-seat:${roomCode}`;
 const RECONNECT_DELAY_MS = 1_000;
 
-export function useOnlineRoomController() {
+export function useOnlineRoomController({ onVerifiedResult = null } = {}) {
   const [room, setRoom] = useState(null);
   const [status, setStatus] = useState(endpoint ? 'idle' : 'unavailable');
   const [error, setError] = useState(null);
   const [snapshot, setSnapshot] = useState(null);
   const [pending, setPending] = useState(false);
   const socketRef = useRef(null);
+  const snapshotRef = useRef(null);
   const reconnectTimerRef = useRef(null);
   const connectRef = useRef(null);
   const pendingCommandRef = useRef(null);
@@ -50,6 +52,7 @@ export function useOnlineRoomController() {
           return;
         }
         if (message.type === 'snapshot') {
+          snapshotRef.current = message.payload.snapshot;
           setSnapshot(message.payload.snapshot);
           setStatus(
             message.payload.snapshot.lifecycle === 'abandoned'
@@ -74,9 +77,17 @@ export function useOnlineRoomController() {
         }
         if (message.type === 'match_resumed') setStatus('connected');
         if (message.type === 'terminal_proof')
-          verifyTerminalProof(message.payload, nextRoom.ruleset).then((verified) =>
-            setStatus(verified ? 'verified' : 'verification_failed'),
-          );
+          verifyTerminalProof(message.payload, nextRoom.ruleset).then((verified) => {
+            if (!verified) return setStatus('verification_failed');
+            const fact = deriveVerifiedOnlineFact({
+              commitment: message.payload.commitment,
+              ruleset: nextRoom.ruleset,
+              snapshot: snapshotRef.current,
+              completedAt: new Date().toISOString(),
+            });
+            if (fact.ok) onVerifiedResult?.(fact.value);
+            setStatus('verified');
+          });
         if (message.type === 'command_rejected' || message.type === 'protocol_error') {
           if (
             message.type === 'protocol_error' ||
@@ -105,7 +116,7 @@ export function useOnlineRoomController() {
         if (socketRef.current === socket) setError('online_socket_error');
       });
     },
-    [clearReconnectTimer],
+    [clearReconnectTimer, onVerifiedResult],
   );
 
   useEffect(() => {
