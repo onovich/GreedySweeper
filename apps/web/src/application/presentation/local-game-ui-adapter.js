@@ -91,11 +91,13 @@ export function createLocalGameUiViewModel(controller, { config = BOARD_CONFIG }
       drawerOpen: replaying,
       replay: {
         available: Boolean(replay.isAvailable),
+        isReplaying: Boolean(replay.isReplaying),
         playing: Boolean(replay.isPlaying),
         position: replay.position ?? 0,
         total: replay.total ?? 0,
       },
       progression: controller.progression ?? null,
+      challengeError: controller.challengeError ?? null,
     },
     connection: null,
     terminal: terminal
@@ -132,11 +134,27 @@ export function createLocalIntentBridge(controller) {
     },
     onIntent(intent) {
       if (intent.kind === 'replay') {
-        if (intent.action === 'toggle') controller.replay?.togglePlay?.();
+        if (intent.action === 'toggle') {
+          if (controller.replay?.isReplaying) controller.replay.togglePlay?.();
+          else controller.replay?.start?.();
+        }
         if (intent.action === 'step') controller.replay?.step?.();
+        if (intent.action === 'reset') controller.replay?.reset?.();
+        if (intent.action === 'exit') controller.replay?.exit?.();
       }
-      if (intent.kind === 'challenge' && intent.action === 'daily')
-        controller.startDailyChallenge?.();
+      if (intent.kind === 'challenge') {
+        if (intent.action === 'daily') controller.startDailyChallenge?.();
+        if (intent.action === 'code') controller.startChallenge?.(intent.code);
+      }
+      if (intent.kind === 'match-config') {
+        if (intent.field === 'mode') controller.setMode?.(intent.value);
+        if (intent.field === 'difficulty')
+          controller.setAiPolicy?.({ ...controller.aiPolicy, difficulty: intent.value });
+        if (intent.field === 'style')
+          controller.setAiPolicy?.({ ...controller.aiPolicy, style: intent.value });
+      }
+      if (intent.kind === 'progression' && intent.action === 'reset')
+        controller.progression?.reset?.(intent.confirmed);
       if (intent.kind === 'restart') controller.restart?.();
     },
   };

@@ -1,4 +1,5 @@
 import './utility-drawer.css';
+import { useState } from 'react';
 import { LunarButton, LunarPanel, StatusText } from './primitives';
 
 export function UtilityDrawer({ viewModel, onIntent = () => {} }) {
@@ -12,10 +13,14 @@ export function UtilityDrawer({ viewModel, onIntent = () => {} }) {
         </div>
         <span>{viewModel.utilities.state.toUpperCase()}</span>
       </header>
-      {tab === 'challenge' && <ChallengePanel onIntent={onIntent} />}
+      {tab === 'challenge' && <ChallengePanel viewModel={viewModel} onIntent={onIntent} />}
       {tab === 'replay' && <ReplayPanel viewModel={viewModel} onIntent={onIntent} />}
       {tab === 'record' && (
-        <RecordPanel count={viewModel.utilities.recordCount} onIntent={onIntent} />
+        <RecordPanel
+          count={viewModel.utilities.recordCount}
+          progression={viewModel.utilities.progression}
+          onIntent={onIntent}
+        />
       )}
       {tab === 'room' && (
         <RoomPanel
@@ -28,24 +33,41 @@ export function UtilityDrawer({ viewModel, onIntent = () => {} }) {
   );
 }
 
-function ChallengePanel({ onIntent }) {
+function ChallengePanel({ viewModel, onIntent }) {
+  const [code, setCode] = useState('');
   return (
     <section className="gs-utility-content" aria-label="挑战工具">
-      <StatusText>输入挑战码，或使用今日固定棋局。</StatusText>
+      <label className="gs-field">
+        <span>挑战码</span>
+        <input
+          value={code}
+          onChange={(event) => setCode(event.target.value.trim())}
+          autoComplete="off"
+        />
+      </label>
       <div className="gs-utility-actions">
-        <LunarButton onClick={() => onIntent({ kind: 'challenge', action: 'code' })}>
+        <LunarButton
+          disabled={!code}
+          onClick={() => onIntent({ kind: 'challenge', action: 'code', code })}
+        >
           挑战码
         </LunarButton>
         <LunarButton onClick={() => onIntent({ kind: 'challenge', action: 'daily' })}>
           每日挑战
         </LunarButton>
       </div>
+      {viewModel.utilities.challengeError && (
+        <StatusText tone="danger" role="alert">
+          挑战码无效，请检查后重试。
+        </StatusText>
+      )}
     </section>
   );
 }
 
 function ReplayPanel({ viewModel, onIntent }) {
-  const available = viewModel.session.kind === 'replay' || viewModel.utilities.recordCount > 0;
+  const replay = viewModel.utilities.replay ?? {};
+  const available = Boolean(replay.available || viewModel.session.kind === 'replay');
   return (
     <section className="gs-utility-content" aria-label="回放工具">
       <StatusText>{available ? '回放已就绪 · 对局操作保持锁定' : '暂无可回放记录'}</StatusText>
@@ -54,7 +76,7 @@ function ReplayPanel({ viewModel, onIntent }) {
           disabled={!available}
           onClick={() => onIntent({ kind: 'replay', action: 'toggle' })}
         >
-          播放 / 暂停
+          {replay.playing ? '暂停' : replay.isReplaying ? '继续播放' : '开始回放'}
         </LunarButton>
         <LunarButton
           disabled={!available}
@@ -62,26 +84,49 @@ function ReplayPanel({ viewModel, onIntent }) {
         >
           单步
         </LunarButton>
+        {viewModel.session.kind === 'replay' && (
+          <>
+            <LunarButton onClick={() => onIntent({ kind: 'replay', action: 'reset' })}>
+              回到开头
+            </LunarButton>
+            <LunarButton onClick={() => onIntent({ kind: 'replay', action: 'exit' })}>
+              退出回放
+            </LunarButton>
+          </>
+        )}
       </div>
     </section>
   );
 }
 
-function RecordPanel({ count, onIntent }) {
-  if (count === 0) {
-    return (
-      <section className="gs-utility-empty" aria-label="空记录">
-        <strong>暂无对局记录</strong>
-        <StatusText>完成一局后，可在这里检查回放与本地进度。</StatusText>
-      </section>
-    );
-  }
+function RecordPanel({ count, progression, onIntent }) {
+  const [confirmReset, setConfirmReset] = useState(false);
   return (
-    <section className="gs-utility-content" aria-label="对局记录">
-      <StatusText>本地已保存 {count} 份对局记录。</StatusText>
-      <LunarButton onClick={() => onIntent({ kind: 'record', action: 'open' })}>
-        检查记录
-      </LunarButton>
+    <section className="gs-utility-content" aria-label={count === 0 ? '空记录' : '对局记录'}>
+      <div>
+        <strong>{count === 0 ? '暂无对局记录' : `本地已保存 ${count} 份对局记录`}</strong>
+        <StatusText>
+          完成 {progression?.stats?.completedGames ?? 0} 局 · 胜利 {progression?.stats?.wins ?? 0}{' '}
+          局
+        </StatusText>
+      </div>
+      <div className="gs-utility-actions">
+        <LunarButton
+          disabled={count === 0}
+          onClick={() => onIntent({ kind: 'record', action: 'open' })}
+        >
+          检查记录
+        </LunarButton>
+        <LunarButton
+          variant={confirmReset ? 'danger' : 'quiet'}
+          onClick={() => {
+            if (confirmReset) onIntent({ kind: 'progression', action: 'reset', confirmed: true });
+            setConfirmReset((value) => !value);
+          }}
+        >
+          {confirmReset ? '确认清空本地进度' : '清空本地进度'}
+        </LunarButton>
+      </div>
     </section>
   );
 }
@@ -121,6 +166,9 @@ export function RoomPanel({ connection, terminal, onIntent }) {
           {copy.message}
         </StatusText>
       </div>
+      {['idle', 'unavailable', 'error'].includes(connection.state) && (
+        <RoomEntry connection={connection} onIntent={onIntent} />
+      )}
       {terminalState && <TerminalStatus connection={connection} terminal={terminal} />}
       {copy.action && (
         <LunarButton
@@ -131,6 +179,49 @@ export function RoomPanel({ connection, terminal, onIntent }) {
         </LunarButton>
       )}
     </section>
+  );
+}
+
+function RoomEntry({ connection, onIntent }) {
+  const [roomCode, setRoomCode] = useState(
+    typeof location === 'undefined'
+      ? ''
+      : (new URLSearchParams(location.search).get('room') ?? '').toUpperCase(),
+  );
+  const disabled = connection.state === 'unavailable';
+  return (
+    <div className="gs-room-entry">
+      <div className="gs-utility-actions">
+        <LunarButton
+          disabled={disabled}
+          onClick={() => onIntent({ kind: 'room', action: 'create', ruleset: 'classic-v1' })}
+        >
+          创建 Classic
+        </LunarButton>
+        <LunarButton
+          disabled={disabled}
+          onClick={() => onIntent({ kind: 'room', action: 'create', ruleset: 'greed-v2' })}
+        >
+          创建 Greed
+        </LunarButton>
+      </div>
+      <label className="gs-field">
+        <span>邀请房间码</span>
+        <input
+          value={roomCode}
+          disabled={disabled}
+          maxLength={8}
+          autoComplete="off"
+          onChange={(event) => setRoomCode(event.target.value.toUpperCase())}
+        />
+      </label>
+      <LunarButton
+        disabled={disabled || !roomCode}
+        onClick={() => onIntent({ kind: 'room', action: 'inspect', roomCode })}
+      >
+        检查邀请
+      </LunarButton>
+    </div>
   );
 }
 

@@ -2,4 +2,5 @@
 ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789
 选择者
 方向键移焦触控长按
+到头退出
 ×·+-–—_/.:,!?()[]{}#%&'" 

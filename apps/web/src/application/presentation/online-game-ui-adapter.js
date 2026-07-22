@@ -135,7 +135,8 @@ export function createOnlineIntentBridge(online) {
     },
     onIntent(intent) {
       if (intent.kind !== 'room') return;
-      if (intent.action === 'create') online.create?.('greed-v2');
+      if (intent.action === 'create') online.create?.(intent.ruleset ?? 'greed-v2');
+      if (intent.action === 'inspect') online.inspect?.(intent.roomCode);
       if (intent.action === 'join') online.join?.();
       if (intent.action === 'connect') online.connect?.(online.room);
       if (intent.action === 'retry' && online.room) online.connect?.(online.room, true);

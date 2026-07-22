@@ -33,6 +33,7 @@
     "visual:test": "playwright test --config apps/web/playwright.config.js visual-contract.spec.js",
     "visual:regression": "playwright test --config apps/web/playwright.config.js visual-regression.spec.js",
     "compat:test": "playwright test --config apps/web/playwright.config.js accessibility-compatibility.spec.js",
+    "cutover:test": "playwright test --config apps/web/playwright.config.js production-cutover.spec.js",
     "worker:dry-run": "wrangler deploy --config apps/room-worker/wrangler.jsonc --dry-run",
     "workspace:check": "node scripts/workspace-check.mjs"
   },

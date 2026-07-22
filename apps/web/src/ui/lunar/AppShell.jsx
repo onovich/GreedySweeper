@@ -11,7 +11,11 @@ export function AppShell({ viewModel, board, greed, utilityDrawer = null, onInte
       >
         <ConsoleHeader scores={viewModel.scores} mines={viewModel.mines} />
         <TurnMessage turn={viewModel.turn} />
-        <MatchConfigPanel config={viewModel.matchConfig} onIntent={onIntent} />
+        <MatchConfigPanel
+          config={viewModel.matchConfig}
+          canRestart={viewModel.capabilities.restart}
+          onIntent={onIntent}
+        />
         <section className="gs-board-stage" aria-label="棋盘主区域">
           {board ?? <BoardStagePlaceholder board={viewModel.board} />}
         </section>
@@ -92,8 +96,8 @@ export function TurnMessage({ turn }) {
   );
 }
 
-export function MatchConfigPanel({ config, onIntent }) {
-  const locked = config.state === 'locked';
+export function MatchConfigPanel({ config, canRestart = false, onIntent }) {
+  const locked = config.state !== 'editable';
   return (
     <LunarPanel className="gs-config" aria-labelledby="gs-config-title">
       <div className="gs-panel-heading">
@@ -106,22 +110,70 @@ export function MatchConfigPanel({ config, onIntent }) {
         </span>
       </div>
       <dl className="gs-config__list">
-        <ConfigValue label="模式" value={config.mode === 'greed' ? '贪婪模式' : '经典模式'} />
-        <ConfigValue label="难度" value={config.difficulty} />
-        <ConfigValue label="AI 风格" value={config.style} />
+        <ConfigValue
+          label="模式"
+          value={config.mode}
+          locked={locked}
+          options={[
+            ['standard', '经典模式'],
+            ['greed', '贪婪模式'],
+          ]}
+          onChange={(value) => onIntent({ kind: 'match-config', field: 'mode', value })}
+        />
+        <ConfigValue
+          label="难度"
+          value={config.difficulty}
+          locked={locked}
+          options={[
+            ['easy', '简单'],
+            ['normal', '普通'],
+            ['hard', '困难'],
+          ]}
+          onChange={(value) => onIntent({ kind: 'match-config', field: 'difficulty', value })}
+        />
+        <ConfigValue
+          label="AI 风格"
+          value={config.style}
+          locked={locked}
+          options={[
+            ['conservative', '保守'],
+            ['balanced', '平衡'],
+            ['greedy', '激进'],
+          ]}
+          onChange={(value) => onIntent({ kind: 'match-config', field: 'style', value })}
+        />
       </dl>
-      {!locked && (
-        <LunarButton onClick={() => onIntent({ kind: 'match-config-open' })}>调整配置</LunarButton>
+      {canRestart && (
+        <LunarButton variant="quiet" onClick={() => onIntent({ kind: 'restart' })}>
+          重新开始
+        </LunarButton>
       )}
     </LunarPanel>
   );
 }
 
-function ConfigValue({ label, value }) {
+function ConfigValue({ label, value, locked, options, onChange }) {
+  const labelValue = options.find(([option]) => option === value)?.[1] ?? value;
   return (
     <div>
       <dt>{label}</dt>
-      <dd>{value}</dd>
+      <dd>
+        {locked ? (
+          labelValue
+        ) : (
+          <select
+            aria-label={label}
+            value={value}
+            onChange={(event) => onChange(event.target.value)}
+          >
+            {options.map(([option, optionLabel]) => (
+              <option key={option} value={option}>
+                {optionLabel}
+              </option>
+            ))}
+          </select>
+        )}
+      </dd>
     </div>
   );
 }

@@ -222,6 +222,22 @@
   font-weight: var(--gs-weight-semibold);
 }
 
+.gs-config__list select {
+  max-inline-size: 100%;
+  min-block-size: var(--gs-control-touch-min);
+  border: var(--gs-border-thin) solid var(--gs-state-locked);
+  border-radius: var(--gs-radius-cell);
+  padding-inline: var(--gs-space-1);
+  background: var(--gs-surface-recessed);
+  color: var(--gs-text-primary);
+  font: inherit;
+}
+
+.gs-config__list select:focus-visible {
+  outline: var(--gs-focus-width) solid var(--gs-state-focus);
+  outline-offset: var(--gs-focus-offset);
+}
+
 .gs-board-stage {
   grid-area: board;
   min-inline-size: 0;

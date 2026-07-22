@@ -39,6 +39,36 @@
   gap: var(--gs-space-1);
 }
 
+.gs-field,
+.gs-room-entry {
+  display: grid;
+  gap: var(--gs-space-1);
+}
+
+.gs-field span {
+  color: var(--gs-text-secondary);
+  font-size: var(--gs-text-xs);
+}
+
+.gs-field input {
+  min-block-size: var(--gs-control-touch-min);
+  border: var(--gs-border-thin) solid var(--gs-state-locked);
+  border-radius: var(--gs-radius-cell);
+  padding-inline: var(--gs-space-1);
+  background: var(--gs-surface-recessed);
+  color: var(--gs-text-primary);
+  font-family: var(--gs-font-data);
+}
+
+.gs-field input:focus-visible {
+  outline: var(--gs-focus-width) solid var(--gs-state-focus);
+  outline-offset: var(--gs-focus-offset);
+}
+
+.gs-room-entry {
+  min-inline-size: min(100%, var(--gs-board-min-desktop));
+}
+
 .gs-utility-empty {
   display: grid;
   gap: var(--gs-space-1);
