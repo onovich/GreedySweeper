@@ -8,6 +8,7 @@ const workerRoot = join(root, 'apps', 'room-worker');
 const onlineApplicationRoot = join(root, 'apps', 'web', 'src', 'application', 'online');
 const webSourceRoot = join(root, 'apps', 'web', 'src');
 const applicationRoot = join(webSourceRoot, 'application');
+const lunarUiRoot = join(webSourceRoot, 'ui', 'lunar');
 const requiredBoundaries = [
   'apps/web/src/app',
   'apps/web/src/application',
@@ -32,6 +33,19 @@ const applicationForbidden = [
   {
     pattern: /\b(localStorage|sessionStorage)\b/,
     description: 'browser storage API outside adapter',
+  },
+];
+const lunarVisualForbidden = [
+  {
+    pattern:
+      /from\s+['"][^'"]*(?:application|game-core|online-protocol|room-worker|progression|storage)[^'"]*['"]/,
+    description: 'domain, controller, protocol, worker, progression, or storage import',
+  },
+  { pattern: /\bstyle\s*=\s*\{\{/, description: 'inline style object' },
+  { pattern: /#[0-9a-fA-F]{3,8}\b/, description: 'raw hexadecimal color outside theme tokens' },
+  {
+    pattern: /(?:shadow|duration|z|rounded|border|gap|p[xy]?|m[xy]?)-\[[^\]]+\]/,
+    description: 'arbitrary visual utility value',
   },
 ];
 
@@ -108,6 +122,17 @@ for (const filePath of filesBelow(applicationRoot).filter((file) => /\.(js|jsx)$
   for (const rule of applicationForbidden) {
     if (rule.pattern.test(source))
       violations.push(`${relative(root, filePath)} contains forbidden ${rule.description}.`);
+  }
+}
+inspectFiles(lunarUiRoot, lunarVisualForbidden, violations);
+
+const onlineBoardDefinitions = filesBelow(join(webSourceRoot, 'ui'))
+  .filter((file) => /\.(js|jsx)$/.test(file))
+  .filter((file) => /(?:function|const|class)\s+OnlineBoard\b/.test(readFileSync(file, 'utf8')));
+const legacyOnlineBoard = join(webSourceRoot, 'ui', 'components', 'OnlineRoomPanel.jsx');
+for (const filePath of onlineBoardDefinitions) {
+  if (filePath !== legacyOnlineBoard) {
+    violations.push(`${relative(root, filePath)} defines a duplicate online-only board.`);
   }
 }
 
