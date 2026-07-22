@@ -188,10 +188,17 @@ function createBaseFixture(id) {
           },
         },
     utilities: {
-      activeTab: replay ? 'replay' : 'challenge',
+      activeTab: replay
+        ? 'replay'
+        : online
+          ? 'room'
+          : id === 'utility-empty-record'
+            ? 'record'
+            : 'challenge',
       tabs: ['challenge', 'replay', 'record', 'room'],
       recordCount: id === 'utility-empty-record' ? 0 : 4,
       state: error ? 'error' : 'ready',
+      drawerOpen: online || replay || id === 'utility-empty-record',
     },
     connection: online
       ? {

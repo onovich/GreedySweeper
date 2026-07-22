@@ -30,6 +30,8 @@
     "online:preview-smoke": "node scripts/smoke-preview.mjs",
     "online:free-beta-smoke": "node scripts/smoke-free-beta.mjs",
     "online:kill-switch-smoke": "node scripts/smoke-online-kill-switch.mjs",
+    "visual:test": "playwright test --config apps/web/playwright.config.js visual-contract.spec.js",
+    "visual:regression": "playwright test --config apps/web/playwright.config.js visual-regression.spec.js",
     "worker:dry-run": "wrangler deploy --config apps/room-worker/wrangler.jsonc --dry-run",
     "workspace:check": "node scripts/workspace-check.mjs"
   },
@@ -39,6 +41,7 @@
     "react-dom": "^19.2.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@cloudflare/vitest-pool-workers": "^0.18.5",
     "@eslint/js": "^10.0.1",
     "@testing-library/react": "^16.3.2",

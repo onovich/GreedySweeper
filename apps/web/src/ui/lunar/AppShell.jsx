@@ -5,17 +5,21 @@ import { LunarButton, LunarPanel, StatusText } from './primitives';
 export function AppShell({ viewModel, board, greed, utilityDrawer = null, onIntent = () => {} }) {
   return (
     <main className="gs-canvas" data-lifecycle={viewModel.session.lifecycle}>
-      <section className="gs-shell" aria-label="贪婪扫雷月面终端">
-        <BrandHeader />
-        <ScoreRail scores={viewModel.scores} mines={viewModel.mines} />
+      <section
+        className={`gs-shell${viewModel.greed ? '' : ' gs-shell--classic'}`}
+        aria-label="贪婪扫雷月面终端"
+      >
+        <ConsoleHeader scores={viewModel.scores} mines={viewModel.mines} />
         <TurnMessage turn={viewModel.turn} />
         <MatchConfigPanel config={viewModel.matchConfig} onIntent={onIntent} />
         <section className="gs-board-stage" aria-label="棋盘主区域">
           {board ?? <BoardStagePlaceholder board={viewModel.board} />}
         </section>
-        <aside className="gs-greed-stage" aria-label="贪婪奖励">
-          {greed ?? <GreedStagePlaceholder greed={viewModel.greed} />}
-        </aside>
+        {viewModel.greed && (
+          <aside className="gs-greed-stage" aria-label="贪婪奖励">
+            {greed ?? <GreedStagePlaceholder greed={viewModel.greed} />}
+          </aside>
+        )}
         <UtilityDock utilities={viewModel.utilities} onIntent={onIntent} />
         {utilityDrawer}
       </section>
@@ -32,13 +36,16 @@ export function BrandHeader() {
   );
 }
 
-export function ScoreRail({ scores, mines }) {
+export function ConsoleHeader({ scores, mines }) {
   return (
-    <section className="gs-score-rail" aria-label="对局比分">
+    <header className="gs-console-header" aria-label="对局比分">
       <ScoreCapsule score={scores[0]} />
-      <MineCounter mines={mines} />
+      <div className="gs-console-header__center">
+        <BrandHeader />
+        <MineCounter mines={mines} />
+      </div>
       <ScoreCapsule score={scores[1]} />
-    </section>
+    </header>
   );
 }
 

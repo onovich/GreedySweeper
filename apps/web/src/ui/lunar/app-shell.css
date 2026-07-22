@@ -9,7 +9,7 @@
 .gs-shell {
   display: grid;
   grid-template-areas:
-    'brand score score'
+    'score score score'
     'turn turn turn'
     'config board greed'
     'utility utility utility';
@@ -29,9 +29,9 @@
 }
 
 .gs-brand {
-  grid-area: brand;
   align-self: center;
-  color: var(--gs-surface-recessed);
+  color: var(--gs-text-primary);
+  text-align: center;
 }
 
 .gs-brand h1,
@@ -57,12 +57,21 @@
   letter-spacing: var(--gs-tracking-label);
 }
 
-.gs-score-rail {
+.gs-console-header {
   grid-area: score;
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: 1fr 1.4fr 1fr;
   gap: var(--gs-space-1);
-  align-items: stretch;
+  align-items: center;
+  padding: var(--gs-space-1);
+  border-radius: var(--gs-radius-panel);
+  background: var(--gs-surface-recessed);
+}
+
+.gs-console-header__center {
+  display: grid;
+  gap: var(--gs-space-1);
+  justify-items: center;
 }
 
 .gs-score,
@@ -77,6 +86,11 @@
   background: var(--gs-surface-recessed);
   color: var(--gs-text-primary);
   box-shadow: var(--gs-shadow-inner);
+}
+
+.gs-console-header__center .gs-mine-counter {
+  min-inline-size: var(--gs-panel-min-config);
+  padding-block: var(--gs-space-1);
 }
 
 .gs-score--player {
@@ -213,6 +227,10 @@
   min-inline-size: 0;
 }
 
+.gs-shell--classic .gs-board-stage {
+  grid-column: board-start / greed-end;
+}
+
 .gs-board-placeholder {
   display: grid;
   place-content: center;
@@ -284,7 +302,7 @@
 
   .gs-shell {
     grid-template-areas:
-      'brand score'
+      'score score'
       'turn turn'
       'board greed'
       'config config'
@@ -309,7 +327,6 @@
 
   .gs-shell {
     grid-template-areas:
-      'brand'
       'score'
       'turn'
       'board'
@@ -319,10 +336,6 @@
     grid-template-columns: minmax(0, 1fr);
     min-block-size: calc(100vh - (var(--gs-page-gutter-compact) * 2));
     padding: var(--gs-space-2);
-  }
-
-  .gs-brand {
-    text-align: center;
   }
 }
 
@@ -348,7 +361,7 @@
     white-space: nowrap;
   }
 
-  .gs-score-rail {
+  .gs-console-header {
     grid-template-columns: 1fr auto 1fr;
   }
 
@@ -367,10 +380,8 @@
     font-size: var(--gs-text-xl);
   }
 
-  .gs-greed-stage {
-    position: sticky;
-    z-index: var(--gs-layer-sticky);
-    bottom: var(--gs-space-0);
+  .gs-console-header__center .gs-mine-counter {
+    min-inline-size: 0;
   }
 
   .gs-utility-dock {

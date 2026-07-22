@@ -1,0 +1,24 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#visual-root {
+  min-block-size: 100%;
+  margin: 0;
+}
+
+body {
+  min-inline-size: 320px;
+  background: var(--gs-surface-canvas);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
