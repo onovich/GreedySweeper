@@ -53,7 +53,7 @@ export function ScoreCapsule({ score }) {
   }[score.activity];
   return (
     <article
-      className={`gs-score gs-score--${score.identity} gs-score--${score.activity}`}
+      className={`gs-score gs-score--${score.identity} gs-score--${score.activity}${score.settlement === 'confirmed' ? ' gs-score--settled' : ''}`}
       aria-label={`${score.label}比分`}
     >
       <span className="gs-score__identity" aria-hidden="true" />

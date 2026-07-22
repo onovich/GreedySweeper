@@ -96,6 +96,9 @@
   --gs-cell-touch: 44px;
   --gs-control-touch-min: 44px;
   --gs-board-gap: 2px;
+  --gs-multiplier-segments: 7;
+  --gs-circuit-dash: 8 8;
+  --gs-circuit-flow-distance: -64;
 
   --gs-shadow-inner: inset 0 1px 0 rgb(214 212 195 / 0.16);
   --gs-shadow-outer: 0 8px 24px rgb(0 0 0 / 0.28);

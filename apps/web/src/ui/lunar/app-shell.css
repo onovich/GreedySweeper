@@ -95,6 +95,10 @@
   );
 }
 
+.gs-score--settled {
+  animation: gs-score-settle var(--gs-motion-bank) var(--gs-ease-settle) both;
+}
+
 .gs-score__identity {
   inline-size: var(--gs-space-1);
   block-size: var(--gs-space-1);
@@ -271,4 +275,26 @@
     min-block-size: calc(100vh - (var(--gs-page-gutter-compact) * 2));
     padding: var(--gs-space-2);
   }
+}
+
+@keyframes gs-score-settle {
+  0%,
+  55% {
+    border-color: var(--gs-state-reward);
+    color: var(--gs-state-reward);
+  }
+
+  100% {
+    color: var(--gs-text-primary);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gs-score--settled {
+    animation-duration: var(--gs-motion-reduced);
+  }
+}
+
+[data-motion-tier='minimal'] .gs-score--settled {
+  animation-duration: var(--gs-motion-reduced);
 }
