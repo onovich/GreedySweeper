@@ -277,6 +277,107 @@
   }
 }
 
+@media (max-width: 1279px) and (min-width: 960px) {
+  .gs-canvas {
+    padding: var(--gs-page-gutter-compact);
+  }
+
+  .gs-shell {
+    grid-template-areas:
+      'brand score'
+      'turn turn'
+      'board greed'
+      'config config'
+      'utility utility';
+    grid-template-columns: minmax(var(--gs-board-min-desktop), 3fr) minmax(
+        var(--gs-panel-min-greed),
+        1fr
+      );
+    min-block-size: calc(100vh - (var(--gs-page-gutter-compact) * 2));
+    padding: var(--gs-space-2);
+  }
+
+  .gs-config__list {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 959px) {
+  .gs-canvas {
+    padding: var(--gs-page-gutter-compact);
+  }
+
+  .gs-shell {
+    grid-template-areas:
+      'brand'
+      'score'
+      'turn'
+      'board'
+      'greed'
+      'config'
+      'utility';
+    grid-template-columns: minmax(0, 1fr);
+    min-block-size: calc(100vh - (var(--gs-page-gutter-compact) * 2));
+    padding: var(--gs-space-2);
+  }
+
+  .gs-brand {
+    text-align: center;
+  }
+}
+
+@media (max-width: 767px) {
+  .gs-canvas {
+    padding: var(--gs-space-0);
+  }
+
+  .gs-shell {
+    gap: var(--gs-space-1);
+    min-block-size: 100vh;
+    padding: var(--gs-space-1);
+    border-inline: var(--gs-space-0);
+    border-radius: var(--gs-space-0);
+  }
+
+  .gs-brand__eyebrow {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .gs-score-rail {
+    grid-template-columns: 1fr auto 1fr;
+  }
+
+  .gs-score {
+    gap: var(--gs-space-1);
+    padding: var(--gs-space-1);
+  }
+
+  .gs-score__state {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .gs-score__value {
+    font-size: var(--gs-text-xl);
+  }
+
+  .gs-greed-stage {
+    position: sticky;
+    z-index: var(--gs-layer-sticky);
+    bottom: var(--gs-space-0);
+  }
+
+  .gs-utility-dock {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @keyframes gs-score-settle {
   0%,
   55% {

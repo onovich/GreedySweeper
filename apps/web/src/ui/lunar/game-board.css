@@ -58,6 +58,18 @@
   background: var(--gs-surface-canvas);
 }
 
+.gs-board-scroll {
+  display: grid;
+  max-inline-size: 100%;
+  margin: auto;
+  overscroll-behavior: contain;
+}
+
+.gs-board-scroll:focus-visible {
+  outline: var(--gs-focus-width) solid var(--gs-state-focus);
+  outline-offset: var(--gs-focus-offset);
+}
+
 .gs-cell {
   display: grid;
   place-items: center;
@@ -153,5 +165,30 @@
 @media (prefers-reduced-motion: reduce) {
   .gs-cell {
     transition-duration: var(--gs-motion-reduced);
+  }
+}
+
+@media (max-width: 767px) {
+  .gs-board-frame {
+    padding: var(--gs-space-1);
+  }
+
+  .gs-board-scroll {
+    inline-size: 100%;
+    overflow: auto;
+    touch-action: pan-x pan-y;
+  }
+
+  .gs-game-board {
+    grid-template-columns: repeat(16, var(--gs-cell-touch));
+    inline-size: max-content;
+    margin: var(--gs-space-0);
+  }
+
+  .gs-cell {
+    inline-size: var(--gs-cell-touch);
+    block-size: var(--gs-cell-touch);
+    min-inline-size: var(--gs-cell-touch);
+    min-block-size: var(--gs-cell-touch);
   }
 }

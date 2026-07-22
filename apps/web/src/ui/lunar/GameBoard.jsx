@@ -1,6 +1,9 @@
 import './game-board.css';
+import { useLunarCellPointerIntent } from './useLunarCellPointerIntent';
 
 export function GameBoard({ board, onCellIntent = () => {} }) {
+  const locked = board.state !== 'ready';
+  const pointerIntent = useLunarCellPointerIntent({ onIntent: onCellIntent, locked });
   if (board.state === 'empty' || board.cells.length === 0) {
     return (
       <section className="gs-board-empty" aria-label="扫雷棋盘">
@@ -10,7 +13,6 @@ export function GameBoard({ board, onCellIntent = () => {} }) {
     );
   }
 
-  const locked = board.state !== 'ready';
   return (
     <section className="gs-board-frame" data-state={board.state}>
       <div className="gs-board-heading">
@@ -20,30 +22,33 @@ export function GameBoard({ board, onCellIntent = () => {} }) {
         </div>
         <span>{locked ? lockLabel(board.lockReason) : 'ACTIVE'}</span>
       </div>
-      <div
-        className="gs-game-board"
-        role="grid"
-        aria-label={`${board.rows} 行 ${board.columns} 列扫雷棋盘`}
-        aria-disabled={locked}
-        aria-rowcount={board.rows}
-        aria-colcount={board.columns}
-      >
-        {board.cells.map((cell) => (
-          <GameCell
-            key={cell.id}
-            cell={cell}
-            locked={locked}
-            focused={cell.id === board.focusedCellId}
-            onIntent={onCellIntent}
-          />
-        ))}
+      <div className="gs-board-scroll" tabIndex="0" aria-label="可滚动棋盘视口">
+        <div
+          className="gs-game-board"
+          role="grid"
+          aria-label={`${board.rows} 行 ${board.columns} 列扫雷棋盘`}
+          aria-disabled={locked}
+          aria-rowcount={board.rows}
+          aria-colcount={board.columns}
+        >
+          {board.cells.map((cell) => (
+            <GameCell
+              key={cell.id}
+              cell={cell}
+              locked={locked}
+              focused={cell.id === board.focusedCellId}
+              onIntent={onCellIntent}
+              pointerIntent={pointerIntent}
+            />
+          ))}
+        </div>
       </div>
       {locked && <p className="gs-board-lock-message">{lockMessage(board.lockReason)}</p>}
     </section>
   );
 }
 
-export function GameCell({ cell, locked, focused = false, onIntent }) {
+export function GameCell({ cell, locked, focused = false, onIntent, pointerIntent = null }) {
   const canInteract = !locked && (cell.canReveal || cell.canFlag);
   const emit = (kind) => {
     if (!canInteract) return;
@@ -61,10 +66,17 @@ export function GameCell({ cell, locked, focused = false, onIntent }) {
       aria-rowindex={cell.row + 1}
       aria-colindex={cell.column + 1}
       aria-disabled={!canInteract}
-      onClick={() => emit('reveal')}
+      onPointerDown={(event) => pointerIntent?.onPointerDown(event, cell)}
+      onPointerMove={pointerIntent?.onPointerMove}
+      onPointerUp={pointerIntent?.onPointerUp}
+      onPointerCancel={pointerIntent?.onPointerCancel}
+      onClick={() => (pointerIntent ? pointerIntent.onClick(cell) : emit('reveal'))}
       onContextMenu={(event) => {
-        event.preventDefault();
-        emit('flag');
+        if (pointerIntent) pointerIntent.onContextMenu(event, cell);
+        else {
+          event.preventDefault();
+          emit('flag');
+        }
       }}
       onKeyDown={(event) => {
         if (event.key.toLowerCase() === 'f') {

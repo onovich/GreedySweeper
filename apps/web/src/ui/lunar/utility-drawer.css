@@ -85,3 +85,23 @@
   color: var(--gs-text-secondary);
   font-size: var(--gs-text-xs);
 }
+
+@media (max-width: 959px) {
+  .gs-utility-drawer__heading,
+  .gs-utility-content,
+  .gs-room-panel {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .gs-room-summary {
+    min-inline-size: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .gs-utility-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}
