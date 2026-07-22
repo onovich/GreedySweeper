@@ -1,0 +1,87 @@
+.gs-utility-drawer {
+  grid-column: 1 / -1;
+  padding: var(--gs-space-2);
+}
+
+.gs-utility-drawer__heading,
+.gs-utility-content,
+.gs-room-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gs-space-2);
+}
+
+.gs-utility-drawer__heading {
+  margin-block-end: var(--gs-space-2);
+  padding-block-end: var(--gs-space-1);
+  border-block-end: var(--gs-border-thin) solid var(--gs-state-locked);
+}
+
+.gs-utility-drawer__heading p,
+.gs-utility-drawer__heading h2,
+.gs-room-panel h3 {
+  margin: 0;
+}
+
+.gs-utility-drawer__heading p,
+.gs-utility-drawer__heading > span,
+.gs-room-summary span,
+.gs-room-summary small {
+  color: var(--gs-text-secondary);
+  font-family: var(--gs-font-data);
+  font-size: var(--gs-text-xs);
+  letter-spacing: var(--gs-tracking-label);
+}
+
+.gs-utility-actions {
+  display: flex;
+  gap: var(--gs-space-1);
+}
+
+.gs-utility-empty {
+  display: grid;
+  gap: var(--gs-space-1);
+  justify-items: start;
+  padding: var(--gs-space-2);
+  border: var(--gs-border-thin) dashed var(--gs-state-locked);
+  border-radius: var(--gs-radius-cell);
+  background: var(--gs-surface-recessed);
+}
+
+.gs-room-panel {
+  align-items: stretch;
+}
+
+.gs-room-summary {
+  display: grid;
+  min-inline-size: var(--gs-panel-min-greed);
+  padding: var(--gs-space-1) var(--gs-space-2);
+  border: var(--gs-border-thin) solid var(--gs-state-player);
+  border-radius: var(--gs-radius-cell);
+  background: var(--gs-surface-recessed);
+}
+
+.gs-room-summary strong {
+  font-family: var(--gs-font-data);
+  font-size: var(--gs-text-lg);
+  letter-spacing: var(--gs-tracking-data);
+}
+
+.gs-terminal-status {
+  display: grid;
+  gap: var(--gs-space-1);
+  padding: var(--gs-space-1) var(--gs-space-2);
+  border: var(--gs-border-strong) solid var(--gs-state-locked);
+  border-radius: var(--gs-radius-cell);
+  background: var(--gs-surface-recessed);
+}
+
+.gs-terminal-status--danger {
+  border-color: var(--gs-state-danger);
+}
+
+.gs-terminal-status span {
+  color: var(--gs-text-secondary);
+  font-size: var(--gs-text-xs);
+}
