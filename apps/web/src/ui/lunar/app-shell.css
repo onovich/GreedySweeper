@@ -1,0 +1,274 @@
+.gs-canvas {
+  min-block-size: 100vh;
+  padding: var(--gs-page-gutter-wide);
+  background: var(--gs-surface-canvas);
+  color: var(--gs-text-primary);
+  font-family: var(--gs-font-ui);
+}
+
+.gs-shell {
+  display: grid;
+  grid-template-areas:
+    'brand score score'
+    'turn turn turn'
+    'config board greed'
+    'utility utility utility';
+  grid-template-columns:
+    minmax(var(--gs-panel-min-config), 1fr)
+    minmax(var(--gs-board-min-desktop), 3fr)
+    minmax(var(--gs-panel-min-greed), 1.1fr);
+  gap: var(--gs-space-2);
+  max-inline-size: var(--gs-shell-max-inline);
+  min-block-size: calc(100vh - (var(--gs-page-gutter-wide) * 2));
+  margin-inline: auto;
+  padding: var(--gs-space-3);
+  border: var(--gs-border-strong) solid var(--gs-surface-shell);
+  border-radius: var(--gs-radius-shell);
+  background: var(--gs-surface-shell);
+  box-shadow: var(--gs-shadow-outer);
+}
+
+.gs-brand {
+  grid-area: brand;
+  align-self: center;
+  color: var(--gs-surface-recessed);
+}
+
+.gs-brand h1,
+.gs-brand p,
+.gs-panel-heading h2,
+.gs-panel-heading p,
+.gs-greed-placeholder h2,
+.gs-greed-placeholder p {
+  margin: 0;
+}
+
+.gs-brand h1 {
+  font-size: var(--gs-text-title);
+  font-weight: var(--gs-weight-black);
+  line-height: var(--gs-leading-tight);
+}
+
+.gs-brand__eyebrow,
+.gs-panel-kicker {
+  font-family: var(--gs-font-data);
+  font-size: var(--gs-text-xs);
+  font-weight: var(--gs-weight-semibold);
+  letter-spacing: var(--gs-tracking-label);
+}
+
+.gs-score-rail {
+  grid-area: score;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: var(--gs-space-1);
+  align-items: stretch;
+}
+
+.gs-score,
+.gs-mine-counter {
+  display: flex;
+  align-items: center;
+  gap: var(--gs-space-1);
+  min-inline-size: 0;
+  padding: var(--gs-space-1) var(--gs-space-2);
+  border: var(--gs-border-strong) solid var(--gs-state-locked);
+  border-radius: var(--gs-radius-panel);
+  background: var(--gs-surface-recessed);
+  color: var(--gs-text-primary);
+  box-shadow: var(--gs-shadow-inner);
+}
+
+.gs-score--player {
+  border-color: var(--gs-state-player);
+}
+
+.gs-score--ai {
+  border-color: var(--gs-state-ai);
+}
+
+.gs-score--inactive {
+  border-color: color-mix(
+    in srgb,
+    currentColor calc(var(--gs-opacity-inactive-accent) * 100%),
+    transparent
+  );
+}
+
+.gs-score__identity {
+  inline-size: var(--gs-space-1);
+  block-size: var(--gs-space-1);
+  border-radius: var(--gs-radius-shell);
+  background: currentColor;
+}
+
+.gs-score--player .gs-score__identity {
+  color: var(--gs-state-player);
+}
+
+.gs-score--ai .gs-score__identity {
+  color: var(--gs-state-ai);
+}
+
+.gs-score__label,
+.gs-score__state,
+.gs-mine-counter span,
+.gs-mine-counter small {
+  margin: 0;
+  color: var(--gs-text-secondary);
+  font-size: var(--gs-text-xs);
+}
+
+.gs-score__value,
+.gs-mine-counter strong {
+  margin-inline-start: auto;
+  font-family: var(--gs-font-data);
+  font-size: var(--gs-text-score);
+  line-height: var(--gs-leading-tight);
+}
+
+.gs-mine-counter {
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--gs-space-0);
+  text-align: center;
+}
+
+.gs-mine-counter strong {
+  margin: 0;
+  font-size: var(--gs-text-xl);
+}
+
+.gs-turn-message {
+  grid-area: turn;
+  padding: var(--gs-space-1) var(--gs-space-2);
+  border-radius: var(--gs-radius-cell);
+  background: var(--gs-surface-recessed);
+  color: var(--gs-text-primary);
+  text-align: center;
+}
+
+.gs-config {
+  grid-area: config;
+  padding: var(--gs-space-2);
+}
+
+.gs-panel-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: var(--gs-space-1);
+}
+
+.gs-lock-state {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: var(--gs-space-3);
+  padding-inline: var(--gs-space-1);
+  border: var(--gs-border-thin) solid var(--gs-state-locked);
+  border-radius: var(--gs-radius-cell);
+  color: var(--gs-state-locked);
+  font-family: var(--gs-font-data);
+  font-size: var(--gs-text-xs);
+}
+
+.gs-lock-state::before {
+  content: '';
+  inline-size: var(--gs-space-1);
+  block-size: var(--gs-space-1);
+  margin-inline-end: var(--gs-space-1);
+  border-radius: var(--gs-radius-shell);
+  background: currentColor;
+}
+
+.gs-config__list {
+  display: grid;
+  gap: var(--gs-space-1);
+  margin-block: var(--gs-space-2);
+}
+
+.gs-config__list div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--gs-space-1);
+  padding-block: var(--gs-space-1);
+  border-block-end: var(--gs-border-thin) solid var(--gs-state-locked);
+}
+
+.gs-config__list dt {
+  color: var(--gs-text-secondary);
+}
+
+.gs-config__list dd {
+  margin: 0;
+  font-weight: var(--gs-weight-semibold);
+}
+
+.gs-board-stage {
+  grid-area: board;
+  min-inline-size: 0;
+}
+
+.gs-board-placeholder {
+  display: grid;
+  place-content: center;
+  min-block-size: 100%;
+  padding: var(--gs-space-4);
+  text-align: center;
+}
+
+.gs-board-placeholder p {
+  color: var(--gs-text-secondary);
+  font-family: var(--gs-font-data);
+}
+
+.gs-greed-stage {
+  grid-area: greed;
+}
+
+.gs-greed-placeholder {
+  min-block-size: 100%;
+  padding: var(--gs-space-2);
+}
+
+.gs-greed-placeholder__values {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gs-space-1);
+  margin-block: var(--gs-space-3);
+  color: var(--gs-state-reward);
+  font-family: var(--gs-font-data);
+  font-size: var(--gs-text-xl);
+}
+
+.gs-utility-dock {
+  grid-area: utility;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--gs-space-1);
+}
+
+.gs-utility-dock .gs-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gs-space-1);
+}
+
+.gs-utility-dock .gs-button span {
+  color: var(--gs-text-secondary);
+  font-family: var(--gs-font-data);
+  font-size: var(--gs-text-xs);
+}
+
+@media (max-width: 1439px) and (min-width: 1280px) {
+  .gs-canvas {
+    padding: var(--gs-page-gutter-compact);
+  }
+
+  .gs-shell {
+    gap: var(--gs-space-1);
+    min-block-size: calc(100vh - (var(--gs-page-gutter-compact) * 2));
+    padding: var(--gs-space-2);
+  }
+}

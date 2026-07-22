@@ -1,7 +1,7 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { LunarButton, LunarPanel, StatusText } from '../src/ui/lunar/primitives';
 import fontManifest from '../src/ui/theme/fonts/manifest.json';
@@ -56,5 +56,17 @@ describe('Lunar Console tokens and primitives', () => {
     expect(readFileSync(sourcePath('theme', 'fonts', 'OFL-IBM-Plex-Mono.txt'), 'utf8')).toContain(
       'SIL OPEN FONT LICENSE',
     );
+  });
+
+  it('declares every shipped Lunar Console CJK glyph in the UI subset', () => {
+    const glyphs = readFileSync(sourcePath('theme', 'fonts', 'glyphs.txt'), 'utf8');
+    const componentText = readdirSync(sourcePath('lunar'))
+      .filter((file) => file.endsWith('.jsx'))
+      .map((file) => readFileSync(sourcePath('lunar', file), 'utf8'))
+      .join('');
+    const missing = [...new Set(componentText.match(/[\u3400-\u9fff]/gu) ?? [])].filter(
+      (character) => !glyphs.includes(character),
+    );
+    expect(missing).toEqual([]);
   });
 });
