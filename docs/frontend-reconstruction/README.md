@@ -1,6 +1,6 @@
 # Frontend Reconstruction Plan
 
-Status: planning complete and awaiting architect CheckAndGoal approval. No UI implementation or production cutover is authorized by these documents.
+Status: planning accepted by architect CheckAndGoal. Phase 7 implementation is authorized only through the linked execution guide and its per-round gates.
 
 ## Objective
 
@@ -36,4 +36,4 @@ Reconstruct the approved **CSS Lunar Console / 月面软仪表** direction as ac
 
 ## Implementation entry gate
 
-Implementation may start only after the architect accepts [`validation-report.md`](./validation-report.md). The first implementation slice is tokens/fonts and fixture-only primitives; it is not a rewrite of game-core, protocol, Worker/Durable Object behavior, or production UI.
+The architect accepted [`validation-report.md`](./validation-report.md). Implementation follows the [Phase 7 controlled reconstruction guide](../phase-7-css-lunar-console-frontend-reconstruction-goal-mode-execution-guide.md); the first slice is tokens/fonts and fixture-only primitives, not a rewrite of game-core, protocol, Worker/Durable Object behavior, or deployment topology.

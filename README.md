@@ -43,7 +43,7 @@ Run the commands in this order before functional commits.<br/>**功能提交前�
 
 The pure, serializable game engine is isolated from React, browser events, timers, and rendering. See [ARCHITECTURE.md](ARCHITECTURE.md).<br/>**纯函数且可序列化的游戏引擎与 React、浏览器事件、定时器和渲染隔离。详见 [ARCHITECTURE.md](ARCHITECTURE.md)。**
 
-The accepted CSS Lunar Console reconstruction contracts are indexed in the [frontend reconstruction plan](docs/frontend-reconstruction/README.md). The plan freezes visual evidence, tokens, component states, responsive reflow, View Model integration, screenshot regression, and delivery gates; it does not authorize implementation until architect approval.<br/>**已接受的“月面软仪表”前端复刻契约汇总于[前端复刻计划](docs/frontend-reconstruction/README.md)。该计划冻结视觉证据、Token、组件状态、响应式重排、ViewModel 集成、截图回归与交付门禁；架构师批准前不启动实现。**
+The accepted CSS Lunar Console reconstruction contracts are indexed in the [frontend reconstruction plan](docs/frontend-reconstruction/README.md). Phase 7 implementation follows the [controlled reconstruction guide](docs/phase-7-css-lunar-console-frontend-reconstruction-goal-mode-execution-guide.md).<br/>**已接受的“月面软仪表”前端复刻契约汇总于[前端复刻计划](docs/frontend-reconstruction/README.md)。Phase 7 实施遵循[受控复刻执行指南](docs/phase-7-css-lunar-console-frontend-reconstruction-goal-mode-execution-guide.md)。**
 
 ## Roadmap
 

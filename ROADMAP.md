@@ -115,6 +115,23 @@ Exit criteria:
 - 客户端支持重连、重复消息幂等和不兼容版本提示。
 - 观战和回放复用同一事件协议，不复制业务语义。
 
+### Phase 7 - CSS Lunar Console Frontend Reconstruction and Controlled Integration
+
+Status: planned and dispatched after the frontend reconstruction planning gate passed. Guide: `docs/phase-7-css-lunar-console-frontend-reconstruction-goal-mode-execution-guide.md`.
+
+Player value: replace the prototype presentation with the approved responsive, accessible CSS Lunar Console while preserving every local and online workflow.
+
+Architecture value: introduce a versioned UI View Model and Presentation Effects boundary so shared visual components cannot absorb game-core, protocol, controller, storage, Worker, or Durable Object semantics.
+
+Exit criteria:
+
+- deterministic fixtures reproduce all visual and lifecycle states before controller integration
+- one shared component tree serves local, replay, and online play through separate presentation adapters
+- responsive, accessibility, screenshot, geometry, local, online, build, and architecture gates pass
+- online board, score, POT, multiplier, Bank, turn, and terminal effects remain authoritative and non-optimistic
+- the production UI cutover is isolated, reversible, and verified through the existing Pages and public Free Beta smoke
+- Cloudflare Pages, DNS, custom-domain, billing, and repository visibility remain outside this phase
+
 ## Agile Governance
 
 每个阶段使用相同节奏：目标文档 -> 小步实现 -> 每轮自检/验证 -> 提交推送 -> 最终验收 -> 决定是否进入下一阶段。
