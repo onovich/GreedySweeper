@@ -29,8 +29,10 @@ async function verifyPublishedUi() {
   );
   if (!bundles.some((bundle) => bundle.includes(PREVIEW_ENDPOINT.origin)))
     throw new Error('Public Pages build does not contain the approved Worker origin');
-  if (!bundles.some((bundle) => bundle.includes('Private online room')))
-    throw new Error('Public Pages online UI is missing');
+  const lunarBundle = bundles.find((bundle) => bundle.includes('LUNAR SYSTEM 1986'));
+  if (!lunarBundle) throw new Error('Public Pages Lunar Console UI is missing');
+  if (!lunarBundle.includes('创建 Greed') || !lunarBundle.includes('检查邀请'))
+    throw new Error('Public Pages online room entry is missing');
 }
 
 async function runWorkerSmoke() {
