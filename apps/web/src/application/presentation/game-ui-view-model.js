@@ -40,6 +40,7 @@ export const GAME_UI_VALUES = Object.freeze({
     'revealed-number',
     'flagged-player',
     'flagged-opponent',
+    'flagged-neutral',
     'wrong-flag',
     'exploded',
   ]),
@@ -122,7 +123,12 @@ export function validateGameUiViewModel(value) {
   requireValue(board?.lockReason, GAME_UI_VALUES.lockReasons, 'board.lockReason');
   requireInteger(board?.rows, 'board.rows', { minimum: 1 });
   requireInteger(board?.columns, 'board.columns', { minimum: 1 });
-  if (!Array.isArray(board?.cells) || board.cells.length !== board?.rows * board?.columns) {
+  if (
+    !Array.isArray(board?.cells) ||
+    (board.state === 'empty'
+      ? board.cells.length !== 0
+      : board.cells.length !== board?.rows * board?.columns)
+  ) {
     errors.push('board.cells must match rows × columns');
   } else {
     const ids = new Set();

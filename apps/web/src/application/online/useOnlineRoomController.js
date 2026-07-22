@@ -11,6 +11,7 @@ export function useOnlineRoomController({ onVerifiedResult = null } = {}) {
   const [error, setError] = useState(null);
   const [snapshot, setSnapshot] = useState(null);
   const [pending, setPending] = useState(false);
+  const [confirmation, setConfirmation] = useState(null);
   const socketRef = useRef(null);
   const snapshotRef = useRef(null);
   const reconnectTimerRef = useRef(null);
@@ -52,8 +53,9 @@ export function useOnlineRoomController({ onVerifiedResult = null } = {}) {
           return;
         }
         if (message.type === 'snapshot') {
-          snapshotRef.current = message.payload.snapshot;
-          setSnapshot(message.payload.snapshot);
+          const nextSnapshot = message.payload.snapshot;
+          snapshotRef.current = nextSnapshot;
+          setSnapshot(nextSnapshot);
           setStatus(
             message.payload.snapshot.lifecycle === 'abandoned'
               ? 'abandoned'
@@ -62,13 +64,27 @@ export function useOnlineRoomController({ onVerifiedResult = null } = {}) {
                 : 'connected',
           );
           const pendingCommand = pendingCommandRef.current;
-          if (pendingCommand && message.payload.snapshot.lifecycle === 'active')
-            socket.send(JSON.stringify(pendingCommand));
-        }
-        if (message.type === 'command_accepted') {
-          if (pendingCommandRef.current?.payload.commandId === message.payload.commandId) {
+          if (
+            pendingCommand?.accepted &&
+            nextSnapshot.sequence > pendingCommand.message.payload.sequence
+          ) {
+            setConfirmation(createOnlineConfirmation(pendingCommand, nextSnapshot));
             pendingCommandRef.current = null;
             setPending(false);
+          } else if (pendingCommand && nextSnapshot.lifecycle === 'active') {
+            socket.send(JSON.stringify(pendingCommand.message));
+          }
+        }
+        if (message.type === 'command_accepted') {
+          const pendingCommand = pendingCommandRef.current;
+          if (pendingCommand?.message.payload.commandId === message.payload.commandId) {
+            pendingCommand.accepted = true;
+            const latestSnapshot = snapshotRef.current;
+            if (latestSnapshot?.sequence > pendingCommand.message.payload.sequence) {
+              setConfirmation(createOnlineConfirmation(pendingCommand, latestSnapshot));
+              pendingCommandRef.current = null;
+              setPending(false);
+            }
           }
         }
         if (message.type === 'match_paused') {
@@ -91,7 +107,7 @@ export function useOnlineRoomController({ onVerifiedResult = null } = {}) {
         if (message.type === 'command_rejected' || message.type === 'protocol_error') {
           if (
             message.type === 'protocol_error' ||
-            pendingCommandRef.current?.payload.commandId === message.payload.commandId
+            pendingCommandRef.current?.message.payload.commandId === message.payload.commandId
           )
             pendingCommandRef.current = null;
           setPending(false);
@@ -195,7 +211,12 @@ export function useOnlineRoomController({ onVerifiedResult = null } = {}) {
         type: 'submit_command',
         payload: { commandId: crypto.randomUUID(), sequence: snapshot.sequence, action },
       };
-      pendingCommandRef.current = message;
+      pendingCommandRef.current = {
+        message,
+        accepted: false,
+        baseSnapshot: snapshot,
+      };
+      setConfirmation(null);
       setPending(true);
       socketRef.current.send(JSON.stringify(message));
     },
@@ -209,11 +230,23 @@ export function useOnlineRoomController({ onVerifiedResult = null } = {}) {
     error,
     snapshot,
     pending,
+    confirmation,
     create,
     inspect,
     join,
     connect,
     command,
+  };
+}
+
+function createOnlineConfirmation(pendingCommand, snapshot) {
+  return {
+    id: pendingCommand.message.payload.commandId,
+    baseSequence: pendingCommand.message.payload.sequence,
+    sourceRevision: snapshot.sequence,
+    action: pendingCommand.message.payload.action,
+    before: pendingCommand.baseSnapshot,
+    after: snapshot,
   };
 }
 

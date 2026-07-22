@@ -120,6 +120,10 @@
   color: var(--gs-state-ai);
 }
 
+.gs-cell--flagged-neutral {
+  color: var(--gs-text-primary);
+}
+
 .gs-cell--wrong-flag,
 .gs-cell--exploded {
   background: var(--gs-surface-recessed);

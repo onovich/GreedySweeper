@@ -94,7 +94,11 @@ function CellContent({ cell }) {
   if (cell.state === 'revealed-number') {
     return <span className="gs-cell__number">{cell.neighborMines}</span>;
   }
-  if (cell.state === 'flagged-player' || cell.state === 'flagged-opponent') {
+  if (
+    cell.state === 'flagged-player' ||
+    cell.state === 'flagged-opponent' ||
+    cell.state === 'flagged-neutral'
+  ) {
     return (
       <svg className="gs-cell__mark" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M6 21V3m1 2h10l-3 4 3 4H7" />
