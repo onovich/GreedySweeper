@@ -181,17 +181,17 @@ If `visual:test` or `visual:regression` does not exist at phase start, create it
 
 ## 11. Hard Gates
 
-| Gate | PASS evidence | Failure action |
-| --- | --- | --- |
-| Authority | local rules and online authority unchanged; no optimistic online mutation | block integration/cutover |
-| Hidden information | fixtures, View Models, DOM, logs, screenshots, and errors expose no hidden online state | block release |
-| Visual contract | tokens, component states, reference precedence, and Visual Exceptions are enforced | block baseline approval |
-| Responsive | accepted viewports reflow with board priority, 44px targets, and usable focus/overflow | block cutover |
-| Accessibility | keyboard, focus, contrast, live regions, labels, reduced motion, and touch pass | block cutover |
-| Regression | deterministic screenshots and geometry assertions pass in the accepted matrix | block cutover |
-| Local compatibility | random/challenge/daily/replay/progression behavior remains covered | block cutover |
-| Online compatibility | Classic/Greed, pending, reconnect, replacement, terminal verification, and effect deduplication pass | block cutover |
-| Public Free Beta | Pages plus HTTPS/WSS Classic/Greed/reconnect smoke pass after cutover | roll back cutover |
+| Gate                 | PASS evidence                                                                                        | Failure action            |
+| -------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------- |
+| Authority            | local rules and online authority unchanged; no optimistic online mutation                            | block integration/cutover |
+| Hidden information   | fixtures, View Models, DOM, logs, screenshots, and errors expose no hidden online state              | block release             |
+| Visual contract      | tokens, component states, reference precedence, and Visual Exceptions are enforced                   | block baseline approval   |
+| Responsive           | accepted viewports reflow with board priority, 44px targets, and usable focus/overflow               | block cutover             |
+| Accessibility        | keyboard, focus, contrast, live regions, labels, reduced motion, and touch pass                      | block cutover             |
+| Regression           | deterministic screenshots and geometry assertions pass in the accepted matrix                        | block cutover             |
+| Local compatibility  | random/challenge/daily/replay/progression behavior remains covered                                   | block cutover             |
+| Online compatibility | Classic/Greed, pending, reconnect, replacement, terminal verification, and effect deduplication pass | block cutover             |
+| Public Free Beta     | Pages plus HTTPS/WSS Classic/Greed/reconnect smoke pass after cutover                                | roll back cutover         |
 
 ## 12. PASS Criteria
 
