@@ -2,6 +2,16 @@
 
 This glossary defines the shared language for Greedy Sweeper's local and online play. It describes product concepts only and deliberately excludes implementation choices.
 
+## Greed Play
+
+**Bonus Pot**:
+The unbanked extra reward accumulated during one Greed turn. It is not part of a player's score until a successful Bank or correct flag settles it, and it is lost after a wrong flag or exploded mine.
+_Avoid_: Current score, multiplier, guaranteed reward
+
+**Bank**:
+A Greed action that settles the current Bonus Pot into the Active Player's score and ends that player's turn.
+_Avoid_: Quit, surrender, pause
+
 ## Online Play
 
 **Online Match**:
@@ -47,6 +57,10 @@ _Avoid_: Loss, forfeit, completed match
 **Player Command**:
 A versioned request from the Active Player asking the Match Authority to apply one gameplay action at an expected match sequence.
 _Avoid_: Client state, UI event, state patch
+
+**Authoritative Confirmation**:
+Evidence from the Match Authority that a Player Command was accepted and the canonical Online Match state advanced. A local click or pending request is not confirmation.
+_Avoid_: Optimistic update, button press, request sent
 
 **Command ID**:
 A client-generated identifier that makes one Player Command idempotent across retries and reconnects.

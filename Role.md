@@ -2,7 +2,7 @@
 
 workspace: D:\WebProjects\GreedySweeper
 created_at: 2026-07-16T04:15:59.4719751+08:00
-updated_at: 2026-07-17T19:08:00+08:00
+updated_at: 2026-07-20T02:43:36.5709984+08:00
 
 planner:
   role: architect
@@ -21,6 +21,18 @@ domain:
   thread_id: 019f6cc7-e472-75b1-b48c-87bc0931a712
   title: 域名管理员
   evidence: current active onovich.com domain migration thread in the same workspace.
+
+artist:
+  role: artist
+  thread_id: 019f7016-1c79-7682-879a-9589a7691bb4
+  title: 美术
+  evidence: current active art-direction thread in the same workspace.
+
+frontend:
+  role: frontend
+  thread_id: 019f7bae-ad15-70b1-a8b3-29729e5ae289
+  title: 前端开发
+  evidence: current active frontend development thread in the same workspace.
 
 idempotency:
   active_goal_guide: docs/phase-6b-playable-private-room-vertical-slice-goal-mode-execution-guide.md
