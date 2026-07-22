@@ -63,6 +63,20 @@ describe('Lunar Console tokens and primitives', () => {
     const componentText = readdirSync(sourcePath('lunar'))
       .filter((file) => file.endsWith('.jsx'))
       .map((file) => readFileSync(sourcePath('lunar', file), 'utf8'))
+      .concat([
+        readFileSync(
+          resolve(
+            process.cwd(),
+            'apps',
+            'web',
+            'src',
+            'application',
+            'presentation',
+            'local-game-ui-adapter.js',
+          ),
+          'utf8',
+        ),
+      ])
       .join('');
     const missing = [...new Set(componentText.match(/[\u3400-\u9fff]/gu) ?? [])].filter(
       (character) => !glyphs.includes(character),

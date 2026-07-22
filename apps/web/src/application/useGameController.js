@@ -126,9 +126,10 @@ export function useGameController({
         if (transition.result.type !== RESULT_TYPES.applied) return current;
 
         const appended = appendActionRecord(current.actions, action, rules);
-        return appended.ok
+        const next = appended.ok
           ? { ...current, gameState: transition.state, actions: appended.value }
           : { ...current, gameState: transition.state };
+        return attachPresentationEvents(current, next, transition.result.events);
       });
     },
     [config, isReplaying, scoreConfig],
@@ -301,9 +302,10 @@ export function useGameController({
         const transition = applyAction(current.gameState, action, activeConfig, scoreConfig, rules);
         if (transition.result.type !== RESULT_TYPES.applied) return current;
         const appended = appendActionRecord(current.actions, action, rules);
-        return appended.ok
+        const next = appended.ok
           ? { ...current, gameState: transition.state, actions: appended.value }
           : { ...current, gameState: transition.state };
+        return attachPresentationEvents(current, next, transition.result.events);
       });
     }, timing.aiDelayMs);
 
@@ -413,6 +415,7 @@ export function useGameController({
       reset: resetProgression,
     },
     registerVerifiedOnlineFact,
+    presentation: session.presentation ?? null,
     replay: {
       isAvailable: Boolean(session.descriptor && session.actions.length),
       isReplaying,
@@ -425,6 +428,16 @@ export function useGameController({
       reset: resetReplay,
       exit: exitReplay,
       aiPolicy: session.aiPolicy,
+    },
+  };
+}
+
+function attachPresentationEvents(current, next, events) {
+  return {
+    ...next,
+    presentation: {
+      revision: (current.presentation?.revision ?? 0) + 1,
+      events: events.map((event) => ({ ...event })),
     },
   };
 }
