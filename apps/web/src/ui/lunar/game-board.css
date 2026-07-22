@@ -1,0 +1,157 @@
+.gs-board-frame {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gs-space-1);
+  min-block-size: 100%;
+  padding: var(--gs-space-2);
+  border: var(--gs-border-strong) solid var(--gs-state-player);
+  border-radius: var(--gs-radius-panel);
+  background: var(--gs-surface-recessed);
+  box-shadow: var(--gs-glow-player);
+}
+
+.gs-board-frame[data-state='pending'],
+.gs-board-frame[data-state='reconnecting'],
+.gs-board-frame[data-state='paused'],
+.gs-board-frame[data-state='replay'],
+.gs-board-frame[data-state='terminal'],
+.gs-board-frame[data-state='error'] {
+  border-color: var(--gs-state-locked);
+  box-shadow: var(--gs-shadow-inner);
+}
+
+.gs-board-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--gs-space-1);
+}
+
+.gs-board-heading p,
+.gs-board-heading h2,
+.gs-board-lock-message,
+.gs-board-empty p {
+  margin: 0;
+}
+
+.gs-board-heading p,
+.gs-board-heading span {
+  color: var(--gs-text-secondary);
+  font-family: var(--gs-font-data);
+  font-size: var(--gs-text-xs);
+  letter-spacing: var(--gs-tracking-label);
+}
+
+.gs-board-heading h2 {
+  font-size: var(--gs-text-lg);
+}
+
+.gs-game-board {
+  display: grid;
+  grid-template-columns: repeat(16, minmax(var(--gs-cell-desktop-min), 1fr));
+  gap: var(--gs-board-gap);
+  inline-size: min(100%, calc((var(--gs-cell-desktop-max) * 16) + (var(--gs-board-gap) * 15)));
+  margin: auto;
+  padding: var(--gs-board-gap);
+  border: var(--gs-border-strong) solid var(--gs-state-locked);
+  border-radius: var(--gs-radius-cell);
+  background: var(--gs-surface-canvas);
+}
+
+.gs-cell {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  min-inline-size: var(--gs-cell-desktop-min);
+  min-block-size: var(--gs-cell-desktop-min);
+  border: var(--gs-border-thin) solid var(--gs-state-locked);
+  border-radius: var(--gs-radius-cell);
+  padding: var(--gs-space-0);
+  background: var(--gs-surface-panel);
+  color: var(--gs-text-primary);
+  font-family: var(--gs-font-data);
+  font-size: var(--gs-text-md);
+  font-weight: var(--gs-weight-semibold);
+  line-height: var(--gs-leading-tight);
+  transition:
+    background-color var(--gs-motion-fast) var(--gs-ease-standard),
+    color var(--gs-motion-fast) var(--gs-ease-standard),
+    transform var(--gs-motion-fast) var(--gs-ease-standard);
+}
+
+.gs-cell:hover:not([aria-disabled='true']) {
+  background: color-mix(in srgb, var(--gs-surface-panel) 84%, var(--gs-surface-shell));
+}
+
+.gs-cell:active:not([aria-disabled='true']) {
+  transform: translateY(var(--gs-border-thin));
+  background: var(--gs-surface-recessed);
+}
+
+.gs-cell:focus-visible,
+.gs-cell--focused {
+  outline: var(--gs-focus-width) solid var(--gs-state-focus);
+  outline-offset: calc(var(--gs-focus-offset) * -1);
+}
+
+.gs-cell--revealed-empty,
+.gs-cell--revealed-number {
+  background: var(--gs-surface-shell);
+  color: var(--gs-surface-recessed);
+}
+
+.gs-cell--flagged-player {
+  color: var(--gs-state-player);
+}
+
+.gs-cell--flagged-opponent {
+  color: var(--gs-state-ai);
+}
+
+.gs-cell--wrong-flag,
+.gs-cell--exploded {
+  background: var(--gs-surface-recessed);
+  color: var(--gs-state-danger);
+}
+
+.gs-cell__mark {
+  inline-size: 70%;
+  block-size: 70%;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: var(--gs-border-strong);
+}
+
+.gs-cell--exploded .gs-cell__mark circle {
+  fill: currentColor;
+}
+
+.gs-board-lock-message {
+  color: var(--gs-text-secondary);
+  font-size: var(--gs-text-sm);
+  text-align: center;
+}
+
+.gs-board-empty {
+  display: grid;
+  place-content: center;
+  min-block-size: 100%;
+  padding: var(--gs-space-4);
+  border: var(--gs-border-strong) dashed var(--gs-state-locked);
+  border-radius: var(--gs-radius-panel);
+  background: var(--gs-surface-recessed);
+  color: var(--gs-text-primary);
+  text-align: center;
+}
+
+.gs-board-empty p {
+  color: var(--gs-text-secondary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gs-cell {
+    transition-duration: var(--gs-motion-reduced);
+  }
+}
