@@ -1,9 +1,19 @@
 import './game-board.css';
+import { useState } from 'react';
 import { useLunarCellPointerIntent } from './useLunarCellPointerIntent';
 
 export function GameBoard({ board, onCellIntent = () => {} }) {
   const locked = board.state !== 'ready';
   const pointerIntent = useLunarCellPointerIntent({ onIntent: onCellIntent, locked });
+  const [focusOverrideId, setFocusOverrideId] = useState(
+    board.focusedCellId ?? board.cells[0]?.id ?? null,
+  );
+  const activeCellId = board.cells.some((cell) => cell.id === focusOverrideId)
+    ? focusOverrideId
+    : board.cells.some((cell) => cell.id === board.focusedCellId)
+      ? board.focusedCellId
+      : (board.cells[0]?.id ?? null);
+
   if (board.state === 'empty' || board.cells.length === 0) {
     return (
       <section className="gs-board-empty" aria-label="扫雷棋盘">
@@ -22,11 +32,15 @@ export function GameBoard({ board, onCellIntent = () => {} }) {
         </div>
         <span>{locked ? lockLabel(board.lockReason) : 'ACTIVE'}</span>
       </div>
-      <div className="gs-board-scroll" tabIndex="0" aria-label="可滚动棋盘视口">
+      <p className="gs-visually-hidden" id="gs-board-instructions">
+        使用方向键移动棋盘焦点，Enter 翻开，F 标记；触控长按可标记。
+      </p>
+      <div className="gs-board-scroll" aria-label="可滚动棋盘视口">
         <div
           className="gs-game-board"
           role="grid"
           aria-label={`${board.rows} 行 ${board.columns} 列扫雷棋盘`}
+          aria-describedby="gs-board-instructions"
           aria-disabled={locked}
           aria-rowcount={board.rows}
           aria-colcount={board.columns}
@@ -36,7 +50,9 @@ export function GameBoard({ board, onCellIntent = () => {} }) {
               key={cell.id}
               cell={cell}
               locked={locked}
-              focused={cell.id === board.focusedCellId}
+              focused={cell.id === activeCellId}
+              tabIndex={cell.id === activeCellId ? 0 : -1}
+              onNavigate={(event) => navigateGridCell(event, cell, board, setFocusOverrideId)}
               onIntent={onCellIntent}
               pointerIntent={pointerIntent}
             />
@@ -48,7 +64,15 @@ export function GameBoard({ board, onCellIntent = () => {} }) {
   );
 }
 
-export function GameCell({ cell, locked, focused = false, onIntent, pointerIntent = null }) {
+export function GameCell({
+  cell,
+  locked,
+  focused = false,
+  tabIndex = -1,
+  onNavigate = () => {},
+  onIntent,
+  pointerIntent = null,
+}) {
   const canInteract = !locked && (cell.canReveal || cell.canFlag);
   const emit = (kind) => {
     if (!canInteract) return;
@@ -66,6 +90,10 @@ export function GameCell({ cell, locked, focused = false, onIntent, pointerInten
       aria-rowindex={cell.row + 1}
       aria-colindex={cell.column + 1}
       aria-disabled={!canInteract}
+      data-cell-id={cell.id}
+      data-row={cell.row}
+      data-column={cell.column}
+      tabIndex={tabIndex}
       onPointerDown={(event) => pointerIntent?.onPointerDown(event, cell)}
       onPointerMove={pointerIntent?.onPointerMove}
       onPointerUp={pointerIntent?.onPointerUp}
@@ -79,6 +107,12 @@ export function GameCell({ cell, locked, focused = false, onIntent, pointerInten
         }
       }}
       onKeyDown={(event) => {
+        if (
+          ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)
+        ) {
+          onNavigate(event);
+          return;
+        }
         if (event.key.toLowerCase() === 'f') {
           event.preventDefault();
           emit('flag');
@@ -88,6 +122,35 @@ export function GameCell({ cell, locked, focused = false, onIntent, pointerInten
       <CellContent cell={cell} />
     </button>
   );
+}
+
+function navigateGridCell(event, cell, board, setActiveCellId) {
+  let row = cell.row;
+  let column = cell.column;
+  if (event.key === 'ArrowUp') row -= 1;
+  if (event.key === 'ArrowDown') row += 1;
+  if (event.key === 'ArrowLeft') column -= 1;
+  if (event.key === 'ArrowRight') column += 1;
+  if (event.key === 'Home') {
+    row = event.ctrlKey ? 0 : cell.row;
+    column = 0;
+  }
+  if (event.key === 'End') {
+    row = event.ctrlKey ? board.rows - 1 : cell.row;
+    column = board.columns - 1;
+  }
+  row = Math.max(0, Math.min(board.rows - 1, row));
+  column = Math.max(0, Math.min(board.columns - 1, column));
+  const target = board.cells.find(
+    (candidate) => candidate.row === row && candidate.column === column,
+  );
+  if (!target) return;
+  event.preventDefault();
+  setActiveCellId(target.id);
+  event.currentTarget
+    .closest('[role="grid"]')
+    ?.querySelector(`[data-cell-id="${target.id}"]`)
+    ?.focus();
 }
 
 function CellContent({ cell }) {

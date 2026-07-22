@@ -65,6 +65,16 @@
   overscroll-behavior: contain;
 }
 
+.gs-visually-hidden {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .gs-board-scroll:focus-visible {
   outline: var(--gs-focus-width) solid var(--gs-state-focus);
   outline-offset: var(--gs-focus-offset);
@@ -169,6 +179,23 @@
 @media (prefers-reduced-motion: reduce) {
   .gs-cell {
     transition-duration: var(--gs-motion-reduced);
+  }
+}
+
+@media (forced-colors: active) {
+  .gs-board-frame,
+  .gs-game-board,
+  .gs-cell {
+    border-color: CanvasText;
+  }
+
+  .gs-cell:focus-visible,
+  .gs-cell--focused {
+    outline-color: Highlight;
+  }
+
+  .gs-cell__mark {
+    stroke: currentColor;
   }
 }
 

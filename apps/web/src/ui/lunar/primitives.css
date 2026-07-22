@@ -81,3 +81,14 @@
 [data-motion-tier='minimal'] .gs-button {
   transition-duration: var(--gs-motion-reduced);
 }
+
+@media (forced-colors: active) {
+  .gs-panel,
+  .gs-button {
+    border-color: CanvasText;
+  }
+
+  .gs-button:focus-visible {
+    outline-color: Highlight;
+  }
+}

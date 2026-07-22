@@ -32,6 +32,7 @@
     "online:kill-switch-smoke": "node scripts/smoke-online-kill-switch.mjs",
     "visual:test": "playwright test --config apps/web/playwright.config.js visual-contract.spec.js",
     "visual:regression": "playwright test --config apps/web/playwright.config.js visual-regression.spec.js",
+    "compat:test": "playwright test --config apps/web/playwright.config.js accessibility-compatibility.spec.js",
     "worker:dry-run": "wrangler deploy --config apps/room-worker/wrangler.jsonc --dry-run",
     "workspace:check": "node scripts/workspace-check.mjs"
   },
