@@ -55,6 +55,8 @@ Development proceeds in small playable phases, with architecture and validation 
 
 ## Deployment
 
+The next infrastructure phase prepares a reversible [Cloudflare Pages Free cutover](docs/phase-8a-cloudflare-pages-free-cutover-goal-mode-execution-guide.md) for `greedysweeper.onovich.com`; external account, DNS, and repository-visibility actions remain gated while safe repository preparation proceeds.
+
 The public Free beta uses GitHub Pages at `https://blog.onovich.com/GreedySweeper/` and the isolated Free Worker at `https://greedy-sweeper-room-preview.onovich1110.workers.dev`. The Pages workflow injects that public, non-secret origin through `VITE_ONLINE_ENDPOINT`; `GREEDY_SWEEPER_FREE_BETA_ENDPOINT` may replace it as a repository variable. Local builds without `VITE_ONLINE_ENDPOINT` remain safely offline. The post-release GitHub-hosted `online:free-beta-smoke` checks the published UI artifact plus HTTPS/WSS Classic, Greed, and reconnect behavior without Cloudflare credentials. Paid Workers, custom domains, DNS, Cloudflare Pages, and repository privatization remain out of scope.
 
 ## Seeded challenges and replay

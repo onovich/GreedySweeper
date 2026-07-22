@@ -132,6 +132,16 @@ Exit criteria:
 - the production UI cutover is isolated, reversible, and verified through the existing Pages and public Free Beta smoke
 - Cloudflare Pages, DNS, custom-domain, billing, and repository visibility remain outside this phase
 
+### Phase 8A - Cloudflare Pages Free Cutover and Repository Privacy Readiness
+
+Status: safe preparation authorized; external project, DNS, GitHub App, GitHub Pages disablement, and repository-visibility changes remain action-time gated. Guide: `docs/phase-8a-cloudflare-pages-free-cutover-goal-mode-execution-guide.md`.
+
+Player value: move the accepted Lunar Console to a dedicated stable hostname without interrupting the public Free Beta.
+
+Architecture value: separate hosting topology from gameplay and Worker authority, prove reversible dual-host delivery, then unlock a private source repository.
+
+Phase 8B follows only after Phase 8A acceptance and will address authoritative online projection completeness for Greed POT/multiplier, remaining mines, and flag ownership.
+
 ## Agile Governance
 
 每个阶段使用相同节奏：目标文档 -> 小步实现 -> 每轮自检/验证 -> 提交推送 -> 最终验收 -> 决定是否进入下一阶段。
