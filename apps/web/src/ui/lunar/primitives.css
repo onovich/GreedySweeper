@@ -1,0 +1,83 @@
+.gs-panel {
+  border: var(--gs-border-thin) solid color-mix(in srgb, var(--gs-surface-shell) 22%, transparent);
+  border-radius: var(--gs-radius-panel);
+  background-color: var(--gs-surface-panel);
+  background-image: var(--gs-gradient-panel);
+  box-shadow: var(--gs-shadow-inner), var(--gs-shadow-outer);
+  color: var(--gs-text-primary);
+}
+
+.gs-panel--recessed {
+  background-color: var(--gs-surface-recessed);
+}
+
+.gs-button {
+  min-block-size: var(--gs-control-touch-min);
+  border: var(--gs-border-strong) solid currentColor;
+  border-radius: var(--gs-radius-cell);
+  padding-inline: var(--gs-space-2);
+  background: var(--gs-surface-recessed);
+  box-shadow: var(--gs-shadow-control);
+  color: var(--gs-text-primary);
+  font-family: var(--gs-font-ui);
+  font-weight: var(--gs-weight-semibold);
+  transition:
+    color var(--gs-motion-fast) var(--gs-ease-standard),
+    background-color var(--gs-motion-fast) var(--gs-ease-standard),
+    transform var(--gs-motion-fast) var(--gs-ease-standard);
+}
+
+.gs-button:hover:not(:disabled) {
+  background-color: var(--gs-surface-panel);
+}
+
+.gs-button:active:not(:disabled) {
+  transform: translateY(var(--gs-border-strong));
+  box-shadow: none;
+}
+
+.gs-button:focus-visible {
+  outline: var(--gs-focus-width) solid var(--gs-state-focus);
+  outline-offset: var(--gs-focus-offset);
+}
+
+.gs-button:disabled,
+.gs-button[aria-disabled='true'] {
+  cursor: not-allowed;
+  border-color: var(--gs-state-locked);
+  color: var(--gs-text-secondary);
+}
+
+.gs-button--reward {
+  color: var(--gs-state-reward);
+}
+
+.gs-button--danger {
+  color: var(--gs-state-danger);
+}
+
+.gs-status {
+  margin: 0;
+  color: var(--gs-text-secondary);
+  font-family: var(--gs-font-ui);
+  font-size: var(--gs-text-sm);
+  line-height: var(--gs-leading-body);
+}
+
+.gs-status--reward {
+  color: var(--gs-state-reward);
+}
+
+.gs-status--danger {
+  color: var(--gs-state-danger);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gs-button {
+    transition-duration: var(--gs-motion-reduced);
+  }
+}
+
+[data-motion-tier='minimal'] .gs-button {
+  transition-duration: var(--gs-motion-reduced);
+}

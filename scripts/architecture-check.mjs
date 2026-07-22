@@ -125,6 +125,19 @@ for (const filePath of filesBelow(applicationRoot).filter((file) => /\.(js|jsx)$
   }
 }
 inspectFiles(lunarUiRoot, lunarVisualForbidden, violations);
+for (const filePath of filesBelow(lunarUiRoot).filter((file) => file.endsWith('.css'))) {
+  const source = readFileSync(filePath, 'utf8');
+  if (/#[0-9a-fA-F]{3,8}\b/.test(source)) {
+    violations.push(
+      `${relative(root, filePath)} contains a raw hexadecimal color outside theme tokens.`,
+    );
+  }
+  if (/\b(?:z-index|transition-duration|animation-duration)\s*:\s*-?\d/.test(source)) {
+    violations.push(
+      `${relative(root, filePath)} contains a raw layer or duration outside theme tokens.`,
+    );
+  }
+}
 
 const onlineBoardDefinitions = filesBelow(join(webSourceRoot, 'ui'))
   .filter((file) => /\.(js|jsx)$/.test(file))

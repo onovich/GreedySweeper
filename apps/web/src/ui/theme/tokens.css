@@ -1,0 +1,122 @@
+@font-face {
+  font-family: 'Noto Sans SC';
+  src: url('./fonts/noto-sans-sc-ui.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 500 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  src: url('./fonts/ibm-plex-mono-medium.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  src: url('./fonts/ibm-plex-mono-semibold.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+}
+
+:root {
+  --gs-color-deep-space: #071416;
+  --gs-color-lunar-white: #d6d4c3;
+  --gs-color-deep-emerald: #102e2d;
+  --gs-color-emerald-panel: #173f3c;
+  --gs-color-player-blue: #3182e8;
+  --gs-color-ai-red: #d45248;
+  --gs-color-amber: #f0a62e;
+  --gs-color-text: #e9e7d8;
+  --gs-color-text-muted: #79918c;
+
+  --gs-surface-canvas: var(--gs-color-deep-space);
+  --gs-surface-shell: var(--gs-color-lunar-white);
+  --gs-surface-panel: var(--gs-color-emerald-panel);
+  --gs-surface-recessed: var(--gs-color-deep-emerald);
+  --gs-text-primary: var(--gs-color-text);
+  --gs-text-secondary: var(--gs-color-text-muted);
+  --gs-state-player: var(--gs-color-player-blue);
+  --gs-state-ai: var(--gs-color-ai-red);
+  --gs-state-reward: var(--gs-color-amber);
+  --gs-state-locked: var(--gs-color-text-muted);
+  --gs-state-danger: var(--gs-color-ai-red);
+  --gs-state-focus: var(--gs-color-text);
+
+  --gs-opacity-circuit-rest: 0.18;
+  --gs-opacity-circuit-off: 0.08;
+  --gs-opacity-inactive-accent: 0.75;
+  --gs-opacity-disabled: 0.48;
+  --gs-opacity-scrim: 0.72;
+
+  --gs-font-ui: 'Noto Sans SC', 'Microsoft YaHei', 'PingFang SC', system-ui, sans-serif;
+  --gs-font-data: 'IBM Plex Mono', 'Cascadia Mono', 'SFMono-Regular', Consolas, monospace;
+  --gs-weight-medium: 500;
+  --gs-weight-semibold: 600;
+  --gs-weight-black: 900;
+  --gs-text-xs: 0.75rem;
+  --gs-text-sm: 0.875rem;
+  --gs-text-md: 1rem;
+  --gs-text-lg: 1.25rem;
+  --gs-text-xl: 1.5rem;
+  --gs-text-score: clamp(2rem, 3vw, 3rem);
+  --gs-text-title: clamp(2rem, 4vw, 4rem);
+  --gs-leading-tight: 1.1;
+  --gs-leading-body: 1.5;
+  --gs-tracking-data: 0.04em;
+  --gs-tracking-label: 0.08em;
+
+  --gs-space-0: 0;
+  --gs-space-1: 0.5rem;
+  --gs-space-2: 1rem;
+  --gs-space-3: 1.5rem;
+  --gs-space-4: 2rem;
+  --gs-space-5: 2.5rem;
+  --gs-space-6: 3rem;
+  --gs-space-8: 4rem;
+  --gs-radius-cell: 4px;
+  --gs-radius-panel: 16px;
+  --gs-radius-shell: 32px;
+  --gs-border-thin: 1px;
+  --gs-border-strong: 2px;
+  --gs-focus-width: 2px;
+  --gs-focus-offset: 2px;
+
+  --gs-shell-max-inline: 1856px;
+  --gs-page-gutter-wide: 32px;
+  --gs-page-gutter-compact: 16px;
+  --gs-panel-min-config: 216px;
+  --gs-board-min-desktop: 640px;
+  --gs-panel-min-greed: 240px;
+  --gs-cell-desktop-min: 36px;
+  --gs-cell-desktop-max: 44px;
+  --gs-cell-touch: 44px;
+  --gs-control-touch-min: 44px;
+  --gs-board-gap: 2px;
+
+  --gs-shadow-inner: inset 0 1px 0 rgb(214 212 195 / 0.16);
+  --gs-shadow-outer: 0 8px 24px rgb(0 0 0 / 0.28);
+  --gs-shadow-control: 0 4px 0 rgb(7 20 22 / 0.9);
+  --gs-glow-player: 0 0 18px rgb(49 130 232 / 0.24);
+  --gs-glow-ai: 0 0 18px rgb(212 82 72 / 0.2);
+  --gs-glow-reward: 0 0 16px rgb(240 166 46 / 0.26);
+  --gs-gradient-panel: linear-gradient(180deg, rgb(214 212 195 / 0.06), transparent);
+
+  --gs-layer-base: 0;
+  --gs-layer-sticky: 10;
+  --gs-layer-popover: 20;
+  --gs-layer-dialog: 30;
+  --gs-layer-toast: 40;
+
+  --gs-motion-fast: 120ms;
+  --gs-motion-standard: 200ms;
+  --gs-motion-panel: 320ms;
+  --gs-motion-bank: 800ms;
+  --gs-motion-pulse: 1200ms;
+  --gs-motion-reduced: 100ms;
+  --gs-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --gs-ease-settle: cubic-bezier(0.16, 1, 0.3, 1);
+}
