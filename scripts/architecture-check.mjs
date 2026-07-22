@@ -142,11 +142,8 @@ for (const filePath of filesBelow(lunarUiRoot).filter((file) => file.endsWith('.
 const onlineBoardDefinitions = filesBelow(join(webSourceRoot, 'ui'))
   .filter((file) => /\.(js|jsx)$/.test(file))
   .filter((file) => /(?:function|const|class)\s+OnlineBoard\b/.test(readFileSync(file, 'utf8')));
-const legacyOnlineBoard = join(webSourceRoot, 'ui', 'components', 'OnlineRoomPanel.jsx');
 for (const filePath of onlineBoardDefinitions) {
-  if (filePath !== legacyOnlineBoard) {
-    violations.push(`${relative(root, filePath)} defines a duplicate online-only board.`);
-  }
+  violations.push(`${relative(root, filePath)} defines a duplicate online-only board.`);
 }
 
 if (violations.length > 0) {
