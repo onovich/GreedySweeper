@@ -1,6 +1,8 @@
 # Phase 8A Hosting Contract
 
-Status: safe preparation only. No Cloudflare account, DNS, GitHub App, repository visibility, or Pages setting has been changed.
+Status: Round 8 `pages.dev` deployment verified; custom domain, DNS,
+repository visibility, GitHub Pages, billing, and Worker deployment remain
+unchanged and gated.
 
 ## Build variants
 
@@ -14,9 +16,10 @@ Status: safe preparation only. No Cloudflare account, DNS, GitHub App, repositor
 ## Frozen targets and red gates
 
 - Candidate canonical host: `greedysweeper.onovich.com`.
+- Verified Cloudflare Pages Free origin: `https://greedysweeper.pages.dev`.
 - Existing rollback host: `https://blog.onovich.com/GreedySweeper/` remains live until later acceptance.
 - Existing Worker: `https://greedy-sweeper-room-preview.onovich1110.workers.dev` remains unchanged.
-- Forbidden before action-time authorization: Cloudflare Pages project/Git integration, DNS or custom-domain change, GitHub Pages disablement, repository privacy, billing, Worker deployment, and `docs/domain-migration/**` modification.
+- Forbidden before the next action-time authorization: DNS or custom-domain change, GitHub Pages disablement, repository privacy, billing, Worker deployment, and `docs/domain-migration/**` modification.
 
 ## Artifact acceptance
 

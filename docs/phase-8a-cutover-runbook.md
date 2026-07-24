@@ -1,14 +1,19 @@
 # Phase 8A External Cutover Runbook
 
-Status: **BLOCKED_PENDING_USER_ACTION**. This is a checklist, not authorization to perform the actions.
+Status: **ROUND 8 COMPLETE; HOLD BEFORE ROUND 9**. The Pages Free project and
+first `pages.dev` deployment were completed manually by the user. This remains a
+checklist, not authorization for later external actions.
 
-## Required user actions at round 8
+## Completed user actions at round 8
 
-1. Sign in to Cloudflare and authorize creation/connection of a Pages Free project for this repository.
-2. If prompted, grant the Cloudflare GitHub App access only to `onovich/GreedySweeper`.
-3. Confirm production branch `main`, build command `npm run build:cloudflare`, output directory `apps/web/dist`, and the non-secret `VITE_ONLINE_ENDPOINT=https://greedy-sweeper-room-preview.onovich1110.workers.dev` environment value.
-4. Approve adding `greedysweeper.onovich.com` only after the domain-migration owner has supplied signed-off current DNS readiness.
-5. Later, after Cloudflare HTTPS/public smoke/rollback observation succeeds, explicitly approve repository privatization and GitHub Pages disablement as separate actions.
+1. The user connected Cloudflare Pages Free project `greedysweeper` to the GitHub repository.
+2. The first production deployment became available at `https://greedysweeper.pages.dev`.
+3. User screenshots and independent non-browser probes verified the root-path Lunar Console assets and online endpoint injection.
+
+## Remaining gated user actions
+
+1. Approve adding `greedysweeper.onovich.com` only after the domain-migration owner has supplied signed-off current DNS readiness.
+2. Later, after custom-domain HTTPS/public smoke/rollback observation succeeds, explicitly approve repository privatization and GitHub Pages disablement as separate actions.
 
 ## DNS, certificate, and rollback gates
 

@@ -2,7 +2,7 @@
 
 Phase: Phase 8A - Cloudflare Pages Free Cutover and Repository Privacy Readiness
 
-Status: **BLOCKED_PENDING_USER_ACTION**
+Status: **READY_FOR_CHECK — ROUND 8 COMPLETE; HOLD BEFORE ROUND 9**
 
 ## Safe rounds 1-7 complete
 
@@ -16,11 +16,17 @@ Status: **BLOCKED_PENDING_USER_ACTION**
 - `format:check`, `lint`, `test:run` (37 files / 126 tests), `arch:check`, `workspace:check`, both build variants, and both artifact checks: PASS.
 - Visual contract: Chromium and WebKit completed successfully. Firefox could not initialize its local Playwright context (`browserContext.newPage` internal `_page` error), an environment limitation independent of the changed host-build code. No visual regression is claimed from that unavailable engine.
 
-## Remaining user actions before round 8
+## Round 8 — Pages project and first deployment
 
-1. Authorize Cloudflare Pages Free project creation and GitHub repository connection.
-2. Complete any Cloudflare/GitHub login, OAuth, 2FA, or GitHub App prompt personally.
-3. Authorize only the approved `greedysweeper.onovich.com` DNS/custom-domain change after signed domain readiness.
-4. Later, authorize repository privacy and GitHub Pages disablement separately after deployment, HTTPS, smoke, and rollback evidence.
+- The user manually completed the Cloudflare Pages Free GitHub connection and first deployment for project `greedysweeper`.
+- User-supplied screenshots show the production origin `https://greedysweeper.pages.dev`, the Lunar Console UI and root-path assets loading, and the online room panel in standby with Classic and Greed controls.
+- A non-browser HTTPS probe returned `200 OK` from `https://greedysweeper.pages.dev/` with Cloudflare response headers.
+- `npm run online:free-beta-smoke` verified the public HTML root, JavaScript asset, Lunar Console marker, online room entry, and injected `https://greedy-sweeper-room-preview.onovich1110.workers.dev` origin before the local environment timed out connecting to `workers.dev`.
+- The unchanged Worker was therefore verified from an independent GitHub-hosted network. [Preview Worker Smoke 30130822124](https://github.com/onovich/GreedySweeper/actions/runs/30130822124) passed HTTPS health, WSS disconnect/reconnect, two-client Classic and Greed completion, and matching terminal proofs. It used the existing public endpoint, no Cloudflare credentials, and performed no deployment.
+- Exact Cloudflare deployment id and source commit were not queried because console/browser automation was explicitly excluded. The project name, production URL, root-path render, and online configuration are evidenced by the user screenshots; the public origin and Worker behavior are independently probed above.
 
-No Cloudflare project, Git integration, DNS/custom domain, Pages setting, repository visibility, billing, Worker deployment, or domain-migration file was changed.
+## Hold before round 9
+
+Round 9 remains blocked pending signed domain readiness and fresh authorization for only the approved `greedysweeper.onovich.com` custom-domain/DNS change. Repository privacy and GitHub Pages disablement remain separate later gates after custom-domain HTTPS, smoke, observation, and rollback evidence.
+
+During this executor round, no Cloudflare/GitHub console was opened or automated, and no Pages setting, DNS/custom domain, repository visibility, billing, GitHub Pages, Worker deployment, `Role.md`, or `docs/domain-migration/**` file was changed.
